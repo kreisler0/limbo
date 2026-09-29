@@ -2,9 +2,10 @@
 // <= 150 KB JS and <= 40 KB CSS, gzip. The dev-only mock chunk is excluded.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
-const dist = new URL('../dist/assets/', import.meta.url).pathname;
+const dist = fileURLToPath(new URL('../dist/assets/', import.meta.url));
 const BUDGET = { js: 150 * 1024, css: 40 * 1024 };
 const totals = { js: 0, css: 0 };
 for (const f of readdirSync(dist)) {
