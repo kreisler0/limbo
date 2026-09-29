@@ -166,7 +166,7 @@ export function createMockBackend(): Backend {
   const info = (t: TabInfo) => ({ ...t });
 
   function makeTab(url: string, opts: { private?: boolean; pinned?: boolean } = {}): TabInfo {
-    const internal = INTERNAL[url] ?? null;
+    const internal = INTERNAL[url.split(/[?#]/)[0].toLowerCase()] ?? null;
     const host = hostOf(url);
     return {
       id: ++nextId,

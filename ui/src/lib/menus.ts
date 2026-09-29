@@ -15,7 +15,11 @@ export function openInternal(page: 'settings' | 'history' | 'bookmarks' | 'downl
   const existing = browser.tabs.find((t) => t.internal === page);
   if (existing) {
     void api.tabs.activate(existing.id, false);
-    if (section) location.hash = section;
+    if (section) {
+      // Re-set so the page scrolls even when the hash is already this section.
+      history.replaceState(null, '', ' ');
+      location.hash = section;
+    }
     return;
   }
   const t = browser.active;

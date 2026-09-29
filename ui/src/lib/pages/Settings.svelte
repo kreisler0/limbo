@@ -7,9 +7,9 @@
   import Icon from '../components/Icon.svelte';
   import Toggle from '../components/Toggle.svelte';
   import Segmented from '../components/Segmented.svelte';
-  import Stepper from '../components/Stepper.svelte';
+  import MemoryPanel from '../components/MemoryPanel.svelte';
   import { api } from '../ipc';
-  import { browser, formatMB } from '../stores/browser.svelte';
+  import { browser } from '../stores/browser.svelte';
   import { ui } from '../stores/ui.svelte';
   import { actions } from '../menus';
   import { LABELS } from '../shortcuts';
@@ -41,13 +41,40 @@
     untrack(() => initial ?? fromHash(new URL(browser.active?.url ?? 'limbo://settings').hash) ?? fromHash(location.hash) ?? 'general'),
   );
 
+  let main = $state<HTMLElement>();
+  let jumping = false;
+
+  function go(id: Section, smooth = true) {
+    section = id;
+    const el = main?.querySelector<HTMLElement>(`#${id}`);
+    if (!el || !main) return;
+    jumping = true;
+    main.scrollTo({ top: el.offsetTop - 12, behavior: smooth ? 'smooth' : 'instant' });
+    setTimeout(() => (jumping = false), smooth ? 600 : 0);
+  }
+
+  // One scrolling page: jump to the requested section, highlight the one in view.
   $effect(() => {
-    const onHash = () => {
-      const s = fromHash(location.hash);
-      if (s) section = s;
+    if (!main || !s) return;
+    untrack(() => go(section, false));
+    const onScroll = () => {
+      if (jumping || !main) return;
+      const top = main.scrollTop + 80;
+      let current: Section = 'general';
+      for (const el of main.querySelectorAll<HTMLElement>('section[id]')) if (el.offsetTop <= top) current = el.id as Section;
+      if (main.scrollTop + main.clientHeight >= main.scrollHeight - 4) current = NAV[NAV.length - 1].id;
+      section = current;
     };
+    const onHash = () => {
+      const h = fromHash(location.hash);
+      if (h) go(h);
+    };
+    main.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    return () => {
+      main?.removeEventListener('scroll', onScroll);
+      window.removeEventListener('hashchange', onHash);
+    };
   });
 
   const s = $derived(browser.settings);
@@ -78,7 +105,7 @@
   // --- privacy ---
   let perms = $state<SitePermission[]>([]);
   $effect(() => {
-    if (section === 'privacy') api.sites.permissions().then((p) => (perms = p));
+    api.sites.permissions().then((p) => (perms = p));
   });
 
   // --- passwords ---
@@ -89,11 +116,10 @@
   // which sites have saved passwords.
   let icons = $state<Record<string, string | null>>({});
   $effect(() => {
-    if (section === 'passwords')
-      api.passwords.list().then((l) => {
-        logins = l;
-        for (const o of new Set(l.map((x) => x.origin))) api.favicon(o + '/').then((f) => (icons[o] = f));
-      });
+    api.passwords.list().then((l) => {
+      logins = l;
+      for (const o of new Set(l.map((x) => x.origin))) api.favicon(o + '/').then((f) => (icons[o] = f));
+    });
   });
   const shownLogins = $derived(
     logins.filter((l) => !loginFilter || (l.origin + ' ' + l.username).toLowerCase().includes(loginFilter.toLowerCase())),
@@ -203,16 +229,16 @@
   <nav aria-label="Settings sections">
     <h1>Settings</h1>
     {#each NAV as n (n.id)}
-      <button class:on={section === n.id} aria-current={section === n.id ? 'page' : undefined} onclick={() => (section = n.id)}>
+      <button class:on={section === n.id} aria-current={section === n.id ? 'page' : undefined} onclick={() => go(n.id)}>
         <Icon name={n.icon} size={15} />
         {n.label}
       </button>
     {/each}
   </nav>
 
-  <main>
+  <main bind:this={main}>
     {#if s}
-      {#if section === 'general'}
+      <section id="general">
         <h2>General</h2>
         {#if !browser.isDefaultBrowser}
           <div class="card callout">
@@ -241,7 +267,8 @@
             <span class="value">Google</span>
           </div>
         </div>
-      {:else if section === 'appearance'}
+      </section>
+      <section id="appearance">
         <h2>Appearance</h2>
         <div class="card">
           <div class="row">
@@ -268,17 +295,15 @@
             </select>
           </div>
         </div>
-      {:else if section === 'memory'}
+      </section>
+      <section id="memory">
         <h2>Memory saver</h2>
-        <p class="lead">Limbo puts tabs you aren't using to sleep so the one you're looking at stays fast. Sleeping tabs keep their place and wake up when you click them.</p>
+        <p class="lead">Limbo puts tabs you aren't using to sleep so the one you're looking at stays fast. Sleeping tabs keep their place and wake up when you click them. When more tabs are awake than the maximum, the least recently used one goes to sleep; pinned tabs and tabs playing audio or using your camera stay awake.</p>
+        <div class="card live"><MemoryPanel /></div>
         <div class="card">
           <div class="row">
             <div><strong>Mode</strong><p>{PRESET_TEXT[s.memory.preset]}</p></div>
             <Segmented label="Memory saver mode" value={s.memory.preset} options={PRESETS} onchange={(v) => api.memory.setPreset(v).then((x) => (browser.settings = x))} />
-          </div>
-          <div class="row">
-            <div><strong>Maximum awake tabs</strong><p>When more tabs are awake, the least recently used one goes to sleep. Pinned tabs, tabs playing audio and tabs using your camera or microphone don't count.</p></div>
-            <Stepper value={s.memory.maxAwake} min={1} max={20} onchange={(v) => api.memory.setMaxAwake(v).then((x) => (browser.settings = x))} />
           </div>
           {#each [{ key: 'hiddenToLowMs', label: 'Slow down background tabs after' }, { key: 'lowToSuspendMs', label: 'Put tabs to sleep after' }, { key: 'suspendToDiscardMs', label: 'Unload sleeping tabs after' }] as const as t (t.key)}
             <div class="row">
@@ -294,11 +319,12 @@
             <Toggle label="Unload pinned tabs too" checked={s.memory.discardPinned} onchange={(v) => setPolicy({ discardPinned: v })} />
           </div>
           <div class="row">
-            <div><strong>Show memory in the toolbar</strong><p>{browser.memory ? `Limbo is using ${formatMB(browser.memory.totalBytes)} right now.` : 'A small readout of how much memory Limbo uses.'}</p></div>
+            <div><strong>Show memory in the toolbar</strong><p>A small live readout next to the menu button. Click it for this panel.</p></div>
             <Toggle label="Show memory in the toolbar" checked={s.showMemoryInToolbar} onchange={(v) => set({ showMemoryInToolbar: v })} />
           </div>
         </div>
-      {:else if section === 'privacy'}
+      </section>
+      <section id="privacy">
         <h2>Privacy & security</h2>
         <div class="card">
           <div class="row">
@@ -339,7 +365,8 @@
             <p class="empty">Sites you allow or block (camera, location, notifications…) appear here.</p>
           {/each}
         </div>
-      {:else if section === 'passwords'}
+      </section>
+      <section id="passwords">
         <h2>Passwords</h2>
         <p class="lead">Encrypted on this PC with your Windows account. Revealing or exporting asks for Windows Hello or your PIN.</p>
         <div class="toolbar">
@@ -366,7 +393,8 @@
             <p class="empty">{loginFilter ? 'No matches' : 'No saved passwords yet. Import them from Firefox or a CSV file.'}</p>
           {/each}
         </div>
-      {:else if section === 'extensions'}
+      </section>
+      <section id="extensions">
         <h2>Extensions</h2>
         <p class="lead">Limbo runs Chrome extensions (Manifest V3). Open an extension's page in the Chrome Web Store or Edge Add-ons and use “Add to Limbo” in the address bar.</p>
         <div class="toolbar">
@@ -400,7 +428,8 @@
             <Toggle label="Developer mode" checked={s.developerMode} onchange={(v) => set({ developerMode: v })} />
           </div>
         </div>
-      {:else if section === 'downloads'}
+      </section>
+      <section id="downloads">
         <h2>Downloads</h2>
         <div class="card">
           <div class="row">
@@ -412,7 +441,8 @@
             <Toggle label="Ask where to save each file" checked={s.askWhereToSave} onchange={(v) => set({ askWhereToSave: v })} />
           </div>
         </div>
-      {:else if section === 'import'}
+      </section>
+      <section id="import">
         <h2>Import</h2>
         <div class="card">
           <div class="row">
@@ -428,14 +458,16 @@
             <button class="btn" onclick={() => api.bookmarks.exportHtml().then((p) => p && browser.toast('Bookmarks exported'))}>Export…</button>
           </div>
         </div>
-      {:else if section === 'shortcuts'}
+      </section>
+      <section id="shortcuts">
         <h2>Keyboard shortcuts</h2>
         <div class="card">
           {#each SHORTCUTS as [label, keys] (label)}
             <div class="row compact"><span>{label}</span><span class="keys">{#each keys.split(' / ') as k, i (i)}{#if i}<span class="or">or</span>{/if}<span class="kbd">{k}</span>{/each}</span></div>
           {/each}
         </div>
-      {:else if section === 'about'}
+      </section>
+      <section id="about">
         <h2>About Limbo</h2>
         <div class="card about">
           <img src={mark} alt="" width="56" height="56" />
@@ -472,7 +504,7 @@
             </div>
           {/if}
         </div>
-      {/if}
+      </section>
 
       {#if needsRestart}
         <div class="restart card">
@@ -712,6 +744,9 @@
     padding: 16px;
     color: var(--text-muted);
     font-size: var(--text-sm);
+  }
+  .live {
+    padding: 16px;
   }
   .restart {
     position: sticky;
