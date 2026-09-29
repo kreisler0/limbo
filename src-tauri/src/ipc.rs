@@ -65,6 +65,13 @@ pub async fn app_state(b: B<'_>) -> R<AppState> {
     })
 }
 
+/// Saves the session and starts Limbo again (engine flags, SmartScreen).
+#[tauri::command]
+pub async fn app_restart(b: B<'_>) -> R<()> {
+    crate::recovery::restart(&b);
+    Ok(())
+}
+
 /// The UI painted its first frame: show the window (no white flash).
 #[tauri::command]
 pub async fn app_ready(b: B<'_>) -> R<()> {
@@ -547,6 +554,14 @@ pub async fn import_run(b: B<'_>, args: crate::import::RunArgs) -> R<crate::impo
 }
 
 // --- downloads ----------------------------------------------------------------------------------------
+
+/// Picks the downloads folder and stores it in settings.
+#[tauri::command]
+pub async fn downloads_choose_folder(b: B<'_>) -> R<Option<Settings>> {
+    let Some(dir) = crate::dialog::pick_folder(&b, "Choose a downloads folder").await else { return Ok(None) };
+    let patch = serde_json::json!({ "downloadsFolder": dir.to_string_lossy() });
+    settings_set(b, patch).await.map(Some)
+}
 
 #[tauri::command]
 pub async fn downloads_list(b: B<'_>) -> R<Vec<crate::downloads::Progress>> {

@@ -1,0 +1,131 @@
+/* Limbo design tokens: Notion-quiet surfaces, one accent, soft floating layers.
+   Light/dark follow the system unless [data-theme] overrides it. */
+
+:root {
+  --font-ui: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Segoe UI Variable Display', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
+
+  --text-xs: 11px;
+  --text-xs-lh: 16px;
+  --text-sm: 12.5px;
+  --text-sm-lh: 18px;
+  --text-md: 14px;
+  --text-md-lh: 20px;
+  --text-lg: 16px;
+  --text-lg-lh: 24px;
+  --text-xl: 22px;
+  --text-xl-lh: 28px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --bar-height: 44px;
+  --sidebar-width: 260px;
+
+  /* Light */
+  --bg: #ffffff;
+  --bg-subtle: #f7f7f5;
+  --bg-hover: rgba(55, 53, 47, 0.06);
+  --bg-active: rgba(55, 53, 47, 0.1);
+  --bg-float: #ffffff;
+  --text: #37352f;
+  /* 0.72 (plan: 0.65) so muted text meets WCAG AA 4.5:1 on white and --bg-subtle. */
+  --text-muted: rgba(55, 53, 47, 0.72);
+  /* Faint is for disabled controls and decoration only (never body text). */
+  --text-faint: rgba(55, 53, 47, 0.45);
+  --divider: rgba(55, 53, 47, 0.09);
+  --accent: #2383e2;
+  /* Accent as text / as a filled background: both AA against their pair. */
+  --accent-text: #1a6fc4;
+  --accent-strong: #1c6fc1;
+  --accent-soft: rgba(35, 131, 226, 0.12);
+  --on-accent: #ffffff;
+  --danger: #e03e3e;
+  --danger-soft: rgba(224, 62, 62, 0.1);
+  --warning: #cb912f;
+  --warning-soft: rgba(203, 145, 47, 0.14);
+  --success: #0f7b6c;
+  --shadow-float: 0 1px 2px rgba(15, 15, 15, 0.06), 0 8px 24px rgba(15, 15, 15, 0.12);
+  --shadow-tab: 0 0 0 0.5px rgba(15, 15, 15, 0.08), 0 1px 2px rgba(15, 15, 15, 0.06);
+  --scrim: rgba(15, 15, 15, 0.18);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #191919;
+    --bg-subtle: #202020;
+    --bg-hover: rgba(255, 255, 255, 0.055);
+    --bg-active: rgba(255, 255, 255, 0.09);
+    --bg-float: #252525;
+    --text: rgba(255, 255, 255, 0.9);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --text-faint: rgba(255, 255, 255, 0.4);
+    --divider: rgba(255, 255, 255, 0.08);
+    --accent: #529cca;
+    --accent-text: #6fb0dc;
+    --accent-strong: #529cca;
+    --accent-soft: rgba(82, 156, 202, 0.18);
+    --on-accent: #0b1620;
+    --danger: #ff7369;
+    --danger-soft: rgba(255, 115, 105, 0.14);
+    --warning: #e3a849;
+    --warning-soft: rgba(227, 168, 73, 0.16);
+    --success: #4dab9a;
+    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.45);
+    --shadow-tab: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --scrim: rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #191919;
+  --bg-subtle: #202020;
+  --bg-hover: rgba(255, 255, 255, 0.055);
+  --bg-active: rgba(255, 255, 255, 0.09);
+  --bg-float: #252525;
+  --text: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-faint: rgba(255, 255, 255, 0.4);
+  --divider: rgba(255, 255, 255, 0.08);
+  --accent: #529cca;
+  --accent-text: #6fb0dc;
+  --accent-strong: #529cca;
+  --accent-soft: rgba(82, 156, 202, 0.18);
+  --on-accent: #0b1620;
+  --danger: #ff7369;
+  --danger-soft: rgba(255, 115, 105, 0.14);
+  --warning: #e3a849;
+  --warning-soft: rgba(227, 168, 73, 0.16);
+  --success: #4dab9a;
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow-tab: 0 0 0 0.5px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --scrim: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* Private tabs: a dark, violet-tinted chrome so it's obvious at a glance. */
+:root[data-private='true'] {
+  --bg-subtle: #1d1b24;
+  --accent: #9b87f5;
+  --accent-soft: rgba(155, 135, 245, 0.18);
+}

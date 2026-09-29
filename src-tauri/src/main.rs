@@ -115,6 +115,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             ipc::app_state,
             ipc::app_ready,
+            ipc::app_restart,
             ipc::prompt_respond,
             ipc::shortcut,
             ipc::tabs_create,
@@ -173,6 +174,7 @@ fn main() {
             ipc::import_detect,
             ipc::import_choose_folder,
             ipc::import_run,
+            ipc::downloads_choose_folder,
             ipc::downloads_list,
             ipc::downloads_control,
             ipc::downloads_open,

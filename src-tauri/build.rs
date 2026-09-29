@@ -5,6 +5,7 @@
 const COMMANDS: &[&str] = &[
     "app_state",
     "app_ready",
+    "app_restart",
     "prompt_respond",
     "shortcut",
     "tabs_create",
@@ -63,6 +64,7 @@ const COMMANDS: &[&str] = &[
     "import_detect",
     "import_choose_folder",
     "import_run",
+    "downloads_choose_folder",
     "downloads_list",
     "downloads_control",
     "downloads_open",
