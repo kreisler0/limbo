@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
   import BookmarksBar from './lib/components/BookmarksBar.svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
@@ -88,10 +89,13 @@
   });
 
   $effect(() => {
-    // Switching tabs closes page-bound layers (their snapshot is stale).
+    // Switching tabs closes page-bound layers (their snapshot is stale). Only
+    // the active tab is a dependency: opening a layer must not re-run this.
     void browser.activeId;
-    ui.findOpen = false;
-    for (const l of ['siteInfo', 'bookmark', 'autofill'] as const) if (ui.isOpen(l)) ui.close(l);
+    untrack(() => {
+      ui.findOpen = false;
+      for (const l of ['siteInfo', 'bookmark', 'autofill'] as const) if (ui.isOpen(l)) ui.close(l);
+    });
   });
 
   $effect(() => {

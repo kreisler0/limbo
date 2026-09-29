@@ -146,3 +146,28 @@ test.describe('first run', () => {
     await expect.poll(() => page.evaluate(() => window.__limboMock.settings().onboardingDone)).toBe(true);
   });
 });
+
+test('page-bound popovers stay open (bookmark, site info, downloads)', async ({ page }) => {
+  await page.getByRole('button', { name: 'Bookmark this page' }).click();
+  await expect(page.getByRole('dialog', { name: 'Bookmark' })).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(page.getByRole('dialog', { name: 'Bookmark' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Bookmark' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Site information' }).click();
+  await expect(page.getByRole('dialog', { name: 'Site information' })).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(page.getByRole('dialog', { name: 'Site information' })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await press(page, 'Control+j');
+  await expect(page.getByRole('dialog', { name: 'Downloads' })).toBeVisible();
+});
+
+test('switching tabs closes page-bound popovers', async ({ page }) => {
+  await page.getByRole('button', { name: 'Site information' }).click();
+  await expect(page.getByRole('dialog', { name: 'Site information' })).toBeVisible();
+  await press(page, 'Control+2');
+  await expect(page.getByRole('dialog', { name: 'Site information' })).toHaveCount(0);
+});

@@ -1,5 +1,6 @@
 // UI-only state: which layers are open. Esc always closes the topmost one.
 
+import { untrack } from 'svelte';
 import { overlay } from './overlay.svelte';
 
 export type Layer =
@@ -38,13 +39,17 @@ class UiStore {
   }
 
   /** Opens a layer over the page (snapshot swap included). */
+  // open/close read the layer list untracked, so an effect that opens a layer
+  // doesn't re-run every time any layer opens or closes.
   async open(layer: Layer, coversPage = true) {
-    if (!this.layers.includes(layer)) this.layers.push(layer);
+    if (untrack(() => this.layers.includes(layer))) return;
+    this.layers.push(layer);
     if (coversPage) await overlay.cover(layer);
   }
 
   close(layer: Layer) {
-    this.layers = this.layers.filter((l) => l !== layer);
+    if (!untrack(() => this.layers.includes(layer))) return;
+    this.layers = untrack(() => this.layers.filter((l) => l !== layer));
     void overlay.uncover(layer);
   }
 
