@@ -61,8 +61,11 @@ fn places(profile: &Path, now: i64) {
         (7, "https://news.ycombinator.com/", Some("Hacker News"), 0),
     ];
     for &(id, url, title, typed) in pages {
-        c.execute("INSERT INTO moz_places(id, url, title, typed) VALUES (?1, ?2, ?3, ?4)", params![id, url, title, typed])
-            .unwrap();
+        c.execute(
+            "INSERT INTO moz_places(id, url, title, typed) VALUES (?1, ?2, ?3, ?4)",
+            params![id, url, title, typed],
+        )
+        .unwrap();
     }
     let visits: &[(i64, i64, i64)] = &[
         (1, now - DAY_US, 2),
@@ -77,11 +80,15 @@ fn places(profile: &Path, now: i64) {
         (5, now, 2),
     ];
     for &(pid, t, ty) in visits {
-        c.execute("INSERT INTO moz_historyvisits(place_id, visit_date, visit_type) VALUES (?1, ?2, ?3)", params![pid, t, ty])
-            .unwrap();
+        c.execute(
+            "INSERT INTO moz_historyvisits(place_id, visit_date, visit_type) VALUES (?1, ?2, ?3)",
+            params![pid, t, ty],
+        )
+        .unwrap();
     }
     // id, type, fk, parent, position, title, guid
-    let bookmarks: &[(i64, i64, Option<i64>, i64, i64, &str, &str)] = &[
+    type Row<'a> = (i64, i64, Option<i64>, i64, i64, &'a str, &'a str);
+    let bookmarks: &[Row] = &[
         (1, 2, None, 0, 0, "", "root________"),
         (2, 2, None, 1, 0, "menu", "menu________"),
         (3, 2, None, 1, 1, "toolbar", "toolbar_____"),
@@ -140,7 +147,8 @@ fn favicons(profile: &Path) {
         (3, "https://unknown.example/", &[5]),
     ];
     for (id, url, icon_ids) in pages {
-        c.execute("INSERT INTO moz_pages_w_icons(id, page_url, page_url_hash) VALUES (?1, ?2, 0)", params![id, url]).unwrap();
+        c.execute("INSERT INTO moz_pages_w_icons(id, page_url, page_url_hash) VALUES (?1, ?2, 0)", params![id, url])
+            .unwrap();
         for icon in *icon_ids {
             c.execute("INSERT INTO moz_icons_to_pages(page_id, icon_id) VALUES (?1, ?2)", params![id, icon]).unwrap();
         }

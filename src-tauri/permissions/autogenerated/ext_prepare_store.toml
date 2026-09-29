@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-prepare-store"
+description = "Enables the ext_prepare_store command without any pre-configured scope."
+commands.allow = ["ext_prepare_store"]
+
+[[permission]]
+identifier = "deny-ext-prepare-store"
+description = "Denies the ext_prepare_store command without any pre-configured scope."
+commands.deny = ["ext_prepare_store"]

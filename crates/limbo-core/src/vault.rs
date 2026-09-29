@@ -104,7 +104,9 @@ pub enum SavePrompt {
     /// Nothing to do (already saved, or the user said "never" for this site).
     None,
     Save,
-    Update { id: i64 },
+    Update {
+        id: i64,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
@@ -184,9 +186,8 @@ pub fn for_page(conn: &Connection, p: &dyn SecretProtector, page_url: &str) -> R
     while let Some(r) = rows.next()? {
         let mut s = summary(p, r)?;
         // LIKE could match a port suffix or unrelated host; re-check the site.
-        let host_site = url::Url::parse(&s.origin)
-            .ok()
-            .and_then(|u| u.host_str().and_then(omnibox::registrable_domain));
+        let host_site =
+            url::Url::parse(&s.origin).ok().and_then(|u| u.host_str().and_then(omnibox::registrable_domain));
         if host_site.as_deref() == Some(site.as_str()) {
             s.same_site_only = true;
             out.push(s);
@@ -215,7 +216,13 @@ fn find_same(conn: &Connection, p: &dyn SecretProtector, origin: &str, username:
 }
 
 /// Adds or updates a login. Logins are unique per (origin, username).
-pub fn save(conn: &Connection, p: &dyn SecretProtector, login: &NewLogin, source: LoginSource, now_us: i64) -> Result<SaveOutcome> {
+pub fn save(
+    conn: &Connection,
+    p: &dyn SecretProtector,
+    login: &NewLogin,
+    source: LoginSource,
+    now_us: i64,
+) -> Result<SaveOutcome> {
     let origin = normalize_origin(&login.origin).ok_or_else(|| Error::Format("invalid origin".into()))?;
     if let Some(id) = find_same(conn, p, &origin, &login.username)? {
         let current = password(conn, p, id)?;
@@ -257,21 +264,34 @@ pub fn save(conn: &Connection, p: &dyn SecretProtector, login: &NewLogin, source
 }
 
 /// Decides what to offer after a login form was submitted.
-pub fn save_prompt(conn: &Connection, p: &dyn SecretProtector, page_url: &str, username: &str, password_: &str) -> Result<SavePrompt> {
+pub fn save_prompt(
+    conn: &Connection,
+    p: &dyn SecretProtector,
+    page_url: &str,
+    username: &str,
+    password_: &str,
+) -> Result<SavePrompt> {
     let Some(origin) = omnibox::origin_of(page_url) else { return Ok(SavePrompt::None) };
     if password_.is_empty() || is_never_save(conn, &origin)? {
         return Ok(SavePrompt::None);
     }
     match find_same(conn, p, &origin, username)? {
         Some(id) => {
-            if *password(conn, p, id)? == password_ { Ok(SavePrompt::None) } else { Ok(SavePrompt::Update { id }) }
+            if *password(conn, p, id)? == password_ {
+                Ok(SavePrompt::None)
+            } else {
+                Ok(SavePrompt::Update { id })
+            }
         }
         None => Ok(SavePrompt::Save),
     }
 }
 
 pub fn touch_used(conn: &Connection, id: i64, now_us: i64) -> Result<()> {
-    conn.execute("UPDATE logins SET last_used_us = ?2, times_used = times_used + 1 WHERE id = ?1", params![id, now_us])?;
+    conn.execute(
+        "UPDATE logins SET last_used_us = ?2, times_used = times_used + 1 WHERE id = ?1",
+        params![id, now_us],
+    )?;
     Ok(())
 }
 
@@ -294,7 +314,13 @@ pub fn is_never_save(conn: &Connection, origin: &str) -> Result<bool> {
 }
 
 /// Bulk import; merges by (origin, username).
-pub fn import(conn: &mut Connection, p: &dyn SecretProtector, logins: &[NewLogin], source: LoginSource, now_us: i64) -> Result<ImportCounts> {
+pub fn import(
+    conn: &mut Connection,
+    p: &dyn SecretProtector,
+    logins: &[NewLogin],
+    source: LoginSource,
+    now_us: i64,
+) -> Result<ImportCounts> {
     let tx = conn.transaction()?;
     let mut counts = ImportCounts::default();
     for l in logins {
@@ -310,8 +336,16 @@ pub fn import(conn: &mut Connection, p: &dyn SecretProtector, logins: &[NewLogin
 }
 
 const CSV_HEADER: &[&str] = &[
-    "name", "url", "username", "password", "httpRealm", "formActionOrigin", "guid", "timeCreated",
-    "timeLastUsed", "timePasswordChanged",
+    "name",
+    "url",
+    "username",
+    "password",
+    "httpRealm",
+    "formActionOrigin",
+    "guid",
+    "timeCreated",
+    "timeLastUsed",
+    "timePasswordChanged",
 ];
 
 /// CSV export readable by both Chrome (name,url,username,password) and
@@ -351,7 +385,8 @@ pub fn parse_csv(text: &str) -> Result<Vec<NewLogin>> {
     let (realm_c, action_c, guid_c) = (col("httpRealm"), col("formActionOrigin"), col("guid"));
     let (created_c, used_c, changed_c) = (col("timeCreated"), col("timeLastUsed"), col("timePasswordChanged"));
     let get = |row: &Vec<String>, c: Option<usize>| c.and_then(|i| row.get(i)).filter(|s| !s.is_empty()).cloned();
-    let ms_to_us = |row: &Vec<String>, c: Option<usize>| get(row, c).and_then(|s| s.parse::<i64>().ok()).map(|ms| ms * 1000);
+    let ms_to_us =
+        |row: &Vec<String>, c: Option<usize>| get(row, c).and_then(|s| s.parse::<i64>().ok()).map(|ms| ms * 1000);
     let mut out = Vec::new();
     for row in body {
         let Some(url) = get(row, Some(url_c)) else { continue };
@@ -424,7 +459,8 @@ mod tests {
     fn page_matching_and_prompts() {
         let db = Db::open_in_memory().unwrap();
         let c = db.conn();
-        save(c, P, &NewLogin::new("https://accounts.google.com", "me@gmail.com", "pw1"), LoginSource::Native, 1).unwrap();
+        save(c, P, &NewLogin::new("https://accounts.google.com", "me@gmail.com", "pw1"), LoginSource::Native, 1)
+            .unwrap();
         save(c, P, &NewLogin::new("https://google.com", "other@gmail.com", "pw2"), LoginSource::Native, 1).unwrap();
         save(c, P, &NewLogin::new("https://evilgoogle.com", "x", "pw3"), LoginSource::Native, 1).unwrap();
         save(c, P, &NewLogin::new("http://intranet.local", "admin", "pw4"), LoginSource::Native, 1).unwrap();
@@ -438,8 +474,14 @@ mod tests {
         assert_eq!(for_page(c, P, "http://intranet.local/login").unwrap().len(), 1);
         assert!(for_page(c, P, "data:text/html,hi").unwrap().is_empty());
 
-        assert_eq!(save_prompt(c, P, "https://accounts.google.com/x", "me@gmail.com", "pw1").unwrap(), SavePrompt::None);
-        assert!(matches!(save_prompt(c, P, "https://accounts.google.com/x", "me@gmail.com", "new").unwrap(), SavePrompt::Update { .. }));
+        assert_eq!(
+            save_prompt(c, P, "https://accounts.google.com/x", "me@gmail.com", "pw1").unwrap(),
+            SavePrompt::None
+        );
+        assert!(matches!(
+            save_prompt(c, P, "https://accounts.google.com/x", "me@gmail.com", "new").unwrap(),
+            SavePrompt::Update { .. }
+        ));
         assert_eq!(save_prompt(c, P, "https://new.site/", "me", "pw").unwrap(), SavePrompt::Save);
         never_save(c, "https://new.site").unwrap();
         assert_eq!(save_prompt(c, P, "https://new.site/", "me", "pw").unwrap(), SavePrompt::None);

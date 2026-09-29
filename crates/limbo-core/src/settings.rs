@@ -97,10 +97,10 @@ impl Settings {
             let Ok(value) = serde_json::from_str::<serde_json::Value>(json) else { continue };
             let previous = obj.insert(key.to_string(), value);
             // Validate this key alone so one bad row doesn't reset everything.
-            if serde_json::from_value::<Settings>(serde_json::Value::Object(obj.clone())).is_err() {
-                if let Some(prev) = previous {
-                    obj.insert(key.to_string(), prev);
-                }
+            if serde_json::from_value::<Settings>(serde_json::Value::Object(obj.clone())).is_err()
+                && let Some(prev) = previous
+            {
+                obj.insert(key.to_string(), prev);
             }
         }
         serde_json::from_value(serde_json::Value::Object(obj)).unwrap_or_default()
@@ -166,9 +166,7 @@ mod tests {
 
     #[test]
     fn roundtrip_and_bad_rows() {
-        let mut s = Settings::default();
-        s.theme = Theme::Dark;
-        s.memory = Policy::aggressive();
+        let s = Settings { theme: Theme::Dark, memory: Policy::aggressive(), ..Default::default() };
         let rows = s.to_rows();
         let back = Settings::from_rows(rows.iter().map(|(k, v)| (k.as_str(), v.as_str())));
         assert_eq!(back, s);

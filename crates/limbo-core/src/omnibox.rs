@@ -191,29 +191,39 @@ pub fn ctrl_enter_url(input: &str) -> Option<String> {
 }
 
 const NAVIGABLE_SCHEMES: &[&str] = &[
-    "http", "https", "file", "data", "view-source", "chrome-extension", "blob", "ftp", "ws",
-    "wss", "mailto", "tel", "sms", "magnet", "news", "irc", "ircs", "webcal", "geo",
+    "http",
+    "https",
+    "file",
+    "data",
+    "view-source",
+    "chrome-extension",
+    "blob",
+    "ftp",
+    "ws",
+    "wss",
+    "mailto",
+    "tel",
+    "sms",
+    "magnet",
+    "news",
+    "irc",
+    "ircs",
+    "webcal",
+    "geo",
 ];
 
 fn classify_with_scheme(text: &str, opts: ClassifyOptions) -> Option<Destination> {
     // Windows drive paths: C:\foo or C:/foo
     let bytes = text.as_bytes();
-    if bytes.len() >= 3
-        && bytes[0].is_ascii_alphabetic()
-        && bytes[1] == b':'
-        && (bytes[2] == b'\\' || bytes[2] == b'/')
+    if bytes.len() >= 3 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':' && (bytes[2] == b'\\' || bytes[2] == b'/')
     {
         let path = text.replace('\\', "/");
-        return Url::parse(&format!("file:///{path}"))
-            .ok()
-            .map(|u| Destination::Navigate { url: u.into() });
+        return Url::parse(&format!("file:///{path}")).ok().map(|u| Destination::Navigate { url: u.into() });
     }
     // UNC paths: \\server\share
     if let Some(rest) = text.strip_prefix("\\\\") {
         let path = rest.replace('\\', "/");
-        return Url::parse(&format!("file://{path}"))
-            .ok()
-            .map(|u| Destination::Navigate { url: u.into() });
+        return Url::parse(&format!("file://{path}")).ok().map(|u| Destination::Navigate { url: u.into() });
     }
 
     let colon = text.find(':')?;
@@ -227,8 +237,7 @@ fn classify_with_scheme(text: &str, opts: ClassifyOptions) -> Option<Destination
     let rest = &text[colon + 1..];
     // `host:port` is not a scheme.
     let port_len = rest.bytes().take_while(u8::is_ascii_digit).count();
-    if port_len > 0 && rest[port_len..].chars().next().is_none_or(|c| matches!(c, '/' | '?' | '#'))
-    {
+    if port_len > 0 && rest[port_len..].chars().next().is_none_or(|c| matches!(c, '/' | '?' | '#')) {
         return None;
     }
 
@@ -240,10 +249,12 @@ fn classify_with_scheme(text: &str, opts: ClassifyOptions) -> Option<Destination
         "javascript" | "vbscript" => {
             return Some(Destination::Blocked { reason: BlockReason::ScriptUrl });
         }
-        "limbo" => return Some(Destination::Internal {
-            page: InternalPage::NewTab,
-            url: InternalPage::NewTab.url().to_string(),
-        }),
+        "limbo" => {
+            return Some(Destination::Internal {
+                page: InternalPage::NewTab,
+                url: InternalPage::NewTab.url().to_string(),
+            });
+        }
         "edge" | "chrome" => {
             if opts.developer_mode {
                 let url = format!("edge:{rest}");
@@ -267,8 +278,7 @@ fn classify_with_scheme(text: &str, opts: ClassifyOptions) -> Option<Destination
     let known = NAVIGABLE_SCHEMES.contains(&scheme_lower.as_str());
     // Unknown schemes like `steam://` or `zoommtg://` hand off to the OS, but only
     // when they look deliberate: `scheme://` with no whitespace.
-    let deliberate_external =
-        !text.contains(char::is_whitespace) && rest.starts_with("//") && !scheme.contains('.');
+    let deliberate_external = !text.contains(char::is_whitespace) && rest.starts_with("//") && !scheme.contains('.');
     if !known && !deliberate_external {
         return None;
     }
@@ -329,17 +339,13 @@ fn host_like_url(text: &str) -> Option<String> {
 
     let scheme = if host_lower.starts_with('[') {
         // IPv6 literal
-        host_lower.parse::<std::net::Ipv6Addr>().ok().or_else(|| {
-            host_lower
-                .trim_start_matches('[')
-                .trim_end_matches(']')
-                .parse::<std::net::Ipv6Addr>()
-                .ok()
-        })?;
+        host_lower
+            .parse::<std::net::Ipv6Addr>()
+            .ok()
+            .or_else(|| host_lower.trim_start_matches('[').trim_end_matches(']').parse::<std::net::Ipv6Addr>().ok())?;
         "http"
-    } else if is_ipv4(host_trimmed) {
-        "http"
-    } else if host_trimmed == "localhost" || host_trimmed.ends_with(".localhost") {
+    } else if is_ipv4(host_trimmed) || host_trimmed == "localhost" || host_trimmed.ends_with(".localhost") {
+        // IP literals and localhost are usually dev servers and routers without TLS.
         "http"
     } else if !host_trimmed.contains('.') {
         // Single-label intranet host: only with an explicit port or path.
@@ -377,7 +383,10 @@ fn is_ipv4(host: &str) -> bool {
     let parts: Vec<&str> = host.split('.').collect();
     parts.len() == 4
         && parts.iter().all(|p| {
-            !p.is_empty() && p.len() <= 3 && p.bytes().all(|b| b.is_ascii_digit()) && p.parse::<u16>().is_ok_and(|n| n <= 255)
+            !p.is_empty()
+                && p.len() <= 3
+                && p.bytes().all(|b| b.is_ascii_digit())
+                && p.parse::<u16>().is_ok_and(|n| n <= 255)
         })
 }
 
@@ -530,7 +539,10 @@ mod tests {
             ("about:blank", "about:blank"),
             ("data:text/plain,hi", "data:text/plain,hi"),
             ("steam://run/570", "steam://run/570"),
-            ("chrome-extension://abcdefghijklmnopabcdefghijklmnop/popup.html", "chrome-extension://abcdefghijklmnopabcdefghijklmnop/popup.html"),
+            (
+                "chrome-extension://abcdefghijklmnopabcdefghijklmnop/popup.html",
+                "chrome-extension://abcdefghijklmnopabcdefghijklmnop/popup.html",
+            ),
             ("view-source:https://example.com", "view-source:https://example.com"),
         ];
         for (input, expected) in navigate {
@@ -566,7 +578,11 @@ mod tests {
             "node.js",
         ];
         for input in searches {
-            assert!(is_search(input), "expected search for {input:?}, got {:?}", classify(input, ClassifyOptions::default()));
+            assert!(
+                is_search(input),
+                "expected search for {input:?}, got {:?}",
+                classify(input, ClassifyOptions::default())
+            );
         }
     }
 

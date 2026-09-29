@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-window-snap-layouts"
+description = "Enables the window_snap_layouts command without any pre-configured scope."
+commands.allow = ["window_snap_layouts"]
+
+[[permission]]
+identifier = "deny-window-snap-layouts"
+description = "Denies the window_snap_layouts command without any pre-configured scope."
+commands.deny = ["window_snap_layouts"]

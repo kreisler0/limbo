@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tabs-pin"
+description = "Enables the tabs_pin command without any pre-configured scope."
+commands.allow = ["tabs_pin"]
+
+[[permission]]
+identifier = "deny-tabs-pin"
+description = "Denies the tabs_pin command without any pre-configured scope."
+commands.deny = ["tabs_pin"]

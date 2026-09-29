@@ -33,12 +33,8 @@ pub fn parse(json: &str) -> Result<Vec<FirefoxAddon>> {
             continue;
         }
         let Some(id) = s("id") else { continue };
-        let name = a
-            .get("defaultLocale")
-            .and_then(|l| l.get("name"))
-            .and_then(|n| n.as_str())
-            .unwrap_or(id)
-            .to_string();
+        let name =
+            a.get("defaultLocale").and_then(|l| l.get("name")).and_then(|n| n.as_str()).unwrap_or(id).to_string();
         let active = a.get("active").and_then(|x| x.as_bool()).unwrap_or(false);
         out.push(FirefoxAddon {
             chrome: addon_map::lookup(id),
@@ -49,7 +45,9 @@ pub fn parse(json: &str) -> Result<Vec<FirefoxAddon>> {
             active,
         });
     }
-    out.sort_by(|a, b| b.chrome.is_some().cmp(&a.chrome.is_some()).then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase())));
+    out.sort_by(|a, b| {
+        b.chrome.is_some().cmp(&a.chrome.is_some()).then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+    });
     Ok(out)
 }
 

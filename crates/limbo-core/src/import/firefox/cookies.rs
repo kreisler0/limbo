@@ -38,9 +38,8 @@ pub fn normalize_expiry(raw: i64) -> i64 {
 
 /// Reads unexpired, first-party cookies (no container/partition attributes).
 pub fn read(conn: &Connection, now_s: i64) -> Result<Vec<ImportedCookie>> {
-    let has_same_site = conn
-        .prepare("SELECT name FROM pragma_table_info('moz_cookies') WHERE name = 'sameSite'")?
-        .exists([])?;
+    let has_same_site =
+        conn.prepare("SELECT name FROM pragma_table_info('moz_cookies') WHERE name = 'sameSite'")?.exists([])?;
     let sql = format!(
         "SELECT name, value, host, path, expiry, isSecure, isHttpOnly, {}, COALESCE(originAttributes, '')
          FROM moz_cookies",

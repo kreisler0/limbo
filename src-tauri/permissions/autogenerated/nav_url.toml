@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-nav-url"
+description = "Enables the nav_url command without any pre-configured scope."
+commands.allow = ["nav_url"]
+
+[[permission]]
+identifier = "deny-nav-url"
+description = "Denies the nav_url command without any pre-configured scope."
+commands.deny = ["nav_url"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-bookmarks-remove"
+description = "Enables the bookmarks_remove command without any pre-configured scope."
+commands.allow = ["bookmarks_remove"]
+
+[[permission]]
+identifier = "deny-bookmarks-remove"
+description = "Denies the bookmarks_remove command without any pre-configured scope."
+commands.deny = ["bookmarks_remove"]

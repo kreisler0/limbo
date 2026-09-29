@@ -300,13 +300,13 @@ impl Lifecycle {
             }
             TabState::Discarded => actions.push(Action::Recreate(id)),
         }
-        if let Some(prev) = self.active.filter(|&p| p != id) {
-            if self.state(prev) == Some(TabState::Active) {
-                actions.push(Action::Hide(prev));
-                self.set_state(prev, TabState::Hidden, now);
-                if let Some(t) = self.tab_mut(prev) {
-                    t.last_active = now;
-                }
+        if let Some(prev) = self.active.filter(|&p| p != id)
+            && self.state(prev) == Some(TabState::Active)
+        {
+            actions.push(Action::Hide(prev));
+            self.set_state(prev, TabState::Hidden, now);
+            if let Some(t) = self.tab_mut(prev) {
+                t.last_active = now;
             }
         }
         self.set_state(id, TabState::Active, now);
@@ -399,9 +399,7 @@ impl Lifecycle {
                 let delay = match t.state {
                     TabState::Hidden => p.hidden_to_low_ms,
                     TabState::LowMemory if !t.flags.busy() => p.low_to_suspend_ms,
-                    TabState::Suspended
-                        if !t.flags.busy() && (!t.flags.pinned || p.discard_pinned) =>
-                    {
+                    TabState::Suspended if !t.flags.busy() && (!t.flags.pinned || p.discard_pinned) => {
                         p.suspend_to_discard_ms
                     }
                     _ => None,

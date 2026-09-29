@@ -8,10 +8,7 @@ use crate::error::Result;
 
 /// Current time in microseconds since the Unix epoch (Firefox's PRTime unit).
 pub fn now_us() -> i64 {
-    std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_micros() as i64)
-        .unwrap_or(0)
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_micros() as i64).unwrap_or(0)
 }
 
 /// Firefox-compatible bookmark root GUIDs.

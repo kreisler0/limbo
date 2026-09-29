@@ -2077,22 +2077,27 @@ dependencies = [
 name = "limbo"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "limbo-core",
  "log",
  "parking_lot",
  "percent-encoding",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-single-instance",
  "thiserror 2.0.21",
+ "tokio",
  "ureq",
  "url",
  "uuid",
  "webview2-com",
  "windows",
  "windows-core",
+ "windows-future",
+ "zeroize",
  "zip",
 ]
 

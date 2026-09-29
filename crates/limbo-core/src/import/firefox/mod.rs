@@ -63,7 +63,11 @@ pub struct HistoryCounts {
 }
 
 /// Imports history in batches, reporting `(done, total)` pages.
-pub fn import_history(db: &mut Connection, profile: &Path, mut progress: impl FnMut(usize, usize)) -> Result<HistoryCounts> {
+pub fn import_history(
+    db: &mut Connection,
+    profile: &Path,
+    mut progress: impl FnMut(usize, usize),
+) -> Result<HistoryCounts> {
     let snap = snapshot::open(profile, "places.sqlite")?;
     let now = crate::db::now_us();
     let mut counts = HistoryCounts::default();
@@ -223,10 +227,15 @@ mod tests {
         let expected: Vec<(String, String)> = vec![
             ("doesntexist".into(), "xrbSDzYf94gfk".into()),
             ("onemore".into(), "}]\u{a2}\u{f6}\u{f0}\u{e6}[{".into()),
-            ("c\u{f6}mplex".into(), "\u{441}\u{42e}\u{41b}\u{41e}\u{430}\u{436}\u{441}$4vz*V\u{e7}\u{e0}hxpfCbmwo".into()),
+            (
+                "c\u{f6}mplex".into(),
+                "\u{441}\u{42e}\u{41b}\u{41e}\u{430}\u{436}\u{441}$4vz*V\u{e7}\u{e0}hxpfCbmwo".into(),
+            ),
             ("j\u{e3}m\u{ef}e".into(), "Apassword\twithtabs,;colonandsemi'\"andquotes".into()),
         ];
-        for name in ["test_profile_firefox_59", "test_profile_firefox_144", "test_profile_firefox_L\u{42e}\u{448}\u{440}"] {
+        for name in
+            ["test_profile_firefox_59", "test_profile_firefox_144", "test_profile_firefox_L\u{42e}\u{448}\u{440}"]
+        {
             let profile = root.join(name);
             assert!(matches!(logins::read(&profile, "wrong"), Err(Error::WrongPrimaryPassword)), "{name}");
             let got = logins::read(&profile, primary).unwrap_or_else(|e| panic!("{name}: {e}"));

@@ -58,8 +58,8 @@ impl std::fmt::Debug for DecryptedLogins {
 /// Unlocks `key4.db` and decrypts every login. `Err(WrongPrimaryPassword)` means
 /// the UI should ask for the primary password (try `""` first).
 pub fn read(profile: &Path, primary_password: &str) -> Result<DecryptedLogins> {
-    let text = std::fs::read_to_string(profile.join("logins.json"))
-        .map_err(|_| Error::NotFound("logins.json".into()))?;
+    let text =
+        std::fs::read_to_string(profile.join("logins.json")).map_err(|_| Error::NotFound("logins.json".into()))?;
     if !profile.join("key4.db").is_file() {
         return Err(Error::Unsupported(
             "this profile uses key3.db (Firefox 57 or older); export a CSV from about:logins instead".into(),

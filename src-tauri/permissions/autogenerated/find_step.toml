@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-find-step"
+description = "Enables the find_step command without any pre-configured scope."
+commands.allow = ["find_step"]
+
+[[permission]]
+identifier = "deny-find-step"
+description = "Denies the find_step command without any pre-configured scope."
+commands.deny = ["find_step"]

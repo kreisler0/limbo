@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-load-unpacked"
+description = "Enables the ext_load_unpacked command without any pre-configured scope."
+commands.allow = ["ext_load_unpacked"]
+
+[[permission]]
+identifier = "deny-ext-load-unpacked"
+description = "Denies the ext_load_unpacked command without any pre-configured scope."
+commands.deny = ["ext_load_unpacked"]

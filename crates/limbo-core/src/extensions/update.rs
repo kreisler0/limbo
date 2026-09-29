@@ -64,10 +64,10 @@ pub fn parse_response(xml: &str) -> Vec<AvailableUpdate> {
                 if status != "ok" {
                     continue;
                 }
-                if let (Some(version), Some(codebase)) = (attr(tag, "version"), attr(tag, "codebase")) {
-                    if codebase.starts_with("https://") {
-                        out.push(AvailableUpdate { id, version, codebase, sha256: attr(tag, "hash_sha256") });
-                    }
+                if let (Some(version), Some(codebase)) = (attr(tag, "version"), attr(tag, "codebase"))
+                    && codebase.starts_with("https://")
+                {
+                    out.push(AvailableUpdate { id, version, codebase, sha256: attr(tag, "hash_sha256") });
                 }
             }
             _ => {}
@@ -122,6 +122,9 @@ mod tests {
     #[test]
     fn check_urls() {
         let u = check_url("https://x/crx", "140.0", &[("aaa".into(), "1.0".into()), ("bbb".into(), "2".into())]);
-        assert_eq!(u, "https://x/crx?response=updatecheck&prodversion=140.0&acceptformat=crx3&x=id%3Daaa%26v%3D1.0%26uc&x=id%3Dbbb%26v%3D2%26uc");
+        assert_eq!(
+            u,
+            "https://x/crx?response=updatecheck&prodversion=140.0&acceptformat=crx3&x=id%3Daaa%26v%3D1.0%26uc&x=id%3Dbbb%26v%3D2%26uc"
+        );
     }
 }

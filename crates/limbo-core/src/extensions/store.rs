@@ -1,12 +1,12 @@
 //! Extension store URLs. The stores' own "Add" buttons can't talk to an
 //! embedded WebView2, so Limbo shows its own "Add to Limbo" pill on detail pages.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use super::is_valid_id;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Store {
     ChromeWebStore,
@@ -44,10 +44,9 @@ impl Store {
                 "{}?response=redirect&prodversion={prodversion}&acceptformat=crx3&x=id%3D{id}%26installsource%3Dondemand%26uc",
                 self.update_base()
             ),
-            Store::EdgeAddons => format!(
-                "{}?response=redirect&x=id%3D{id}%26installsource%3Dondemand%26uc",
-                self.update_base()
-            ),
+            Store::EdgeAddons => {
+                format!("{}?response=redirect&x=id%3D{id}%26installsource%3Dondemand%26uc", self.update_base())
+            }
         }
     }
 }
@@ -77,7 +76,10 @@ mod tests {
             parse_detail_url(&format!("https://chromewebstore.google.com/detail/ublock-origin-lite/{id}?hl=en")),
             Some((Store::ChromeWebStore, id.into()))
         );
-        assert_eq!(parse_detail_url(&format!("https://chromewebstore.google.com/detail/{id}")), Some((Store::ChromeWebStore, id.into())));
+        assert_eq!(
+            parse_detail_url(&format!("https://chromewebstore.google.com/detail/{id}")),
+            Some((Store::ChromeWebStore, id.into()))
+        );
         assert_eq!(
             parse_detail_url(&format!("https://chrome.google.com/webstore/detail/x/{id}")),
             Some((Store::ChromeWebStore, id.into()))
@@ -93,7 +95,9 @@ mod tests {
     #[test]
     fn download_urls() {
         let u = Store::ChromeWebStore.download_url("abc", "140.0.0.0");
-        assert!(u.starts_with("https://clients2.google.com/service/update2/crx?response=redirect&prodversion=140.0.0.0"));
+        assert!(
+            u.starts_with("https://clients2.google.com/service/update2/crx?response=redirect&prodversion=140.0.0.0")
+        );
         assert!(u.contains("x=id%3Dabc%26installsource%3Dondemand%26uc"));
         assert_eq!(Store::parse(Store::EdgeAddons.as_str()), Some(Store::EdgeAddons));
     }

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-suggest-query"
+description = "Enables the suggest_query command without any pre-configured scope."
+commands.allow = ["suggest_query"]
+
+[[permission]]
+identifier = "deny-suggest-query"
+description = "Denies the suggest_query command without any pre-configured scope."
+commands.deny = ["suggest_query"]

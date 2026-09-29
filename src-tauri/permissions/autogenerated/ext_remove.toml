@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-remove"
+description = "Enables the ext_remove command without any pre-configured scope."
+commands.allow = ["ext_remove"]
+
+[[permission]]
+identifier = "deny-ext-remove"
+description = "Denies the ext_remove command without any pre-configured scope."
+commands.deny = ["ext_remove"]

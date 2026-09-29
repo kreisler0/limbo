@@ -227,7 +227,12 @@ pub fn autofill_hosts(conn: &Connection, text: &str, limit: usize) -> Result<Vec
 
 /// History page: most recent visits first, optionally filtered by text.
 /// Pass the last `visit_us` as `before_us` to page.
-pub fn visits(conn: &Connection, text: Option<&str>, before_us: Option<i64>, limit: usize) -> Result<Vec<HistoryEntry>> {
+pub fn visits(
+    conn: &Connection,
+    text: Option<&str>,
+    before_us: Option<i64>,
+    limit: usize,
+) -> Result<Vec<HistoryEntry>> {
     let before = before_us.unwrap_or(i64::MAX);
     let map = |r: &rusqlite::Row<'_>| {
         Ok(HistoryEntry {
@@ -336,8 +341,7 @@ pub fn delete_url(conn: &mut Connection, url: &str, now_us: i64) -> Result<()> {
 pub fn clear_range(conn: &mut Connection, from_us: i64, to_us: i64, now_us: i64) -> Result<usize> {
     let tx = conn.transaction()?;
     let places: Vec<i64> = {
-        let mut stmt =
-            tx.prepare("SELECT DISTINCT place_id FROM visits WHERE visit_us >= ?1 AND visit_us < ?2")?;
+        let mut stmt = tx.prepare("SELECT DISTINCT place_id FROM visits WHERE visit_us >= ?1 AND visit_us < ?2")?;
         stmt.query_map(params![from_us, to_us], |r| r.get(0))?.collect::<Result<_, _>>()?
     };
     let removed = tx.execute("DELETE FROM visits WHERE visit_us >= ?1 AND visit_us < ?2", params![from_us, to_us])?;
@@ -348,9 +352,7 @@ pub fn clear_range(conn: &mut Connection, from_us: i64, to_us: i64, now_us: i64)
 
 /// New-tab tiles: the most frecent sites, one per host, excluding search results.
 pub fn top_sites(conn: &Connection, limit: usize) -> Result<Vec<TopSite>> {
-    let mut stmt = conn.prepare_cached(
-        "SELECT prefix, host FROM origins ORDER BY frecency DESC LIMIT ?1",
-    )?;
+    let mut stmt = conn.prepare_cached("SELECT prefix, host FROM origins ORDER BY frecency DESC LIMIT ?1")?;
     let rows: Vec<(String, String)> =
         stmt.query_map([(limit * 3) as i64], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<Result<_, _>>()?;
     let mut out: Vec<TopSite> = Vec::new();
@@ -377,7 +379,12 @@ pub fn top_sites(conn: &Connection, limit: usize) -> Result<Vec<TopSite>> {
 
 /// Bulk import (Firefox). Idempotent: visits are unique per (page, time).
 /// Returns `(places, visits)` inserted.
-pub fn import_places(conn: &mut Connection, places: &[ImportedPlace], source: i64, now_us: i64) -> Result<(usize, usize)> {
+pub fn import_places(
+    conn: &mut Connection,
+    places: &[ImportedPlace],
+    source: i64,
+    now_us: i64,
+) -> Result<(usize, usize)> {
     let mut new_places = 0usize;
     let mut new_visits = 0usize;
     let mut touched: Vec<i64> = Vec::with_capacity(places.len());
@@ -472,9 +479,17 @@ mod tests {
     fn search_and_autofill() {
         let mut db = db();
         let c = db.conn_mut();
-        record_visit(c, "https://www.rust-lang.org/", Some("Rust Programming Language"), Transition::Typed, NOW).unwrap();
+        record_visit(c, "https://www.rust-lang.org/", Some("Rust Programming Language"), Transition::Typed, NOW)
+            .unwrap();
         record_visit(c, "https://doc.rust-lang.org/book/", Some("The Rust Book"), Transition::Link, NOW).unwrap();
-        record_visit(c, "https://github.com/rust-lang/rust", Some("rust-lang/rust"), Transition::Link, NOW - 100 * US_PER_DAY).unwrap();
+        record_visit(
+            c,
+            "https://github.com/rust-lang/rust",
+            Some("rust-lang/rust"),
+            Transition::Link,
+            NOW - 100 * US_PER_DAY,
+        )
+        .unwrap();
         record_visit(c, "https://www.google.com/", Some("Google"), Transition::Link, NOW).unwrap();
 
         let m = search(c, "rust", 10).unwrap();
@@ -498,13 +513,17 @@ mod tests {
         record_visit(c, "https://a.com/", Some("A"), Transition::Link, NOW).unwrap();
         record_visit(c, "https://b.com/", Some("B"), Transition::Link, NOW - 5).unwrap();
         let v = visits(c, None, None, 10).unwrap();
-        assert_eq!(v.iter().map(|e| e.url.as_str()).collect::<Vec<_>>(), vec!["https://a.com/", "https://b.com/", "https://a.com/"]);
+        assert_eq!(
+            v.iter().map(|e| e.url.as_str()).collect::<Vec<_>>(),
+            vec!["https://a.com/", "https://b.com/", "https://a.com/"]
+        );
         let page2 = visits(c, None, Some(v[1].visit_us), 10).unwrap();
         assert_eq!(page2.len(), 1);
         assert_eq!(visits(c, Some("b.com"), None, 10).unwrap().len(), 1);
 
         delete_visits(c, &[v[0].visit_id], NOW).unwrap();
-        let count: i64 = c.query_row("SELECT visit_count FROM places WHERE url='https://a.com/'", [], |r| r.get(0)).unwrap();
+        let count: i64 =
+            c.query_row("SELECT visit_count FROM places WHERE url='https://a.com/'", [], |r| r.get(0)).unwrap();
         assert_eq!(count, 1);
 
         delete_url(c, "https://b.com/", NOW).unwrap();
@@ -520,7 +539,8 @@ mod tests {
         let mut db = db();
         let c = db.conn_mut();
         for i in 0..5 {
-            record_visit(c, &format!("https://www.example.com/p{i}"), Some("Example page"), Transition::Link, NOW - i).unwrap();
+            record_visit(c, &format!("https://www.example.com/p{i}"), Some("Example page"), Transition::Link, NOW - i)
+                .unwrap();
         }
         record_visit(c, "https://news.ycombinator.com/", Some("Hacker News"), Transition::Typed, NOW).unwrap();
         let sites = top_sites(c, 8).unwrap();
@@ -541,7 +561,12 @@ mod tests {
                 typed_count: 1,
                 visits: vec![(NOW - 1000, Transition::Typed), (NOW - 500, Transition::Link)],
             },
-            ImportedPlace { url: "place:sort=8".into(), title: None, typed_count: 0, visits: vec![(NOW, Transition::Link)] },
+            ImportedPlace {
+                url: "place:sort=8".into(),
+                title: None,
+                typed_count: 0,
+                visits: vec![(NOW, Transition::Link)],
+            },
         ];
         assert_eq!(import_places(c, &places, 1, NOW).unwrap(), (1, 2));
         assert_eq!(import_places(c, &places, 1, NOW).unwrap(), (0, 0));

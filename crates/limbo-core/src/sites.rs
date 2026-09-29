@@ -17,11 +17,9 @@ pub struct SitePermission {
 
 pub fn permission(conn: &Connection, origin: &str, kind: &str) -> Result<Option<bool>> {
     Ok(conn
-        .query_row(
-            "SELECT allow FROM site_permissions WHERE origin = ?1 AND kind = ?2",
-            params![origin, kind],
-            |r| r.get(0),
-        )
+        .query_row("SELECT allow FROM site_permissions WHERE origin = ?1 AND kind = ?2", params![origin, kind], |r| {
+            r.get(0)
+        })
         .optional()?)
 }
 
@@ -61,7 +59,8 @@ pub fn permissions(conn: &Connection, origin: Option<&str>) -> Result<Vec<SitePe
     Ok(rows)
 }
 
-pub const ZOOM_LEVELS: &[f64] = &[0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0];
+pub const ZOOM_LEVELS: &[f64] =
+    &[0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0];
 
 /// Next zoom step (Ctrl +/-), like Chromium's preset levels.
 pub fn step_zoom(current: f64, up: bool) -> f64 {

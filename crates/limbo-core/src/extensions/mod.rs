@@ -115,7 +115,11 @@ mod tests {
     #[test]
     fn unpack_and_versions() {
         let dir = tempfile::tempdir().unwrap();
-        let zip = crx::testutil::zip_with(&[("manifest.json", "{}"), ("js/bg.js", "x"), ("_metadata/computed_hashes.json", "{}")]);
+        let zip = crx::testutil::zip_with(&[
+            ("manifest.json", "{}"),
+            ("js/bg.js", "x"),
+            ("_metadata/computed_hashes.json", "{}"),
+        ]);
         let v1 = install_dir(dir.path(), "abc", "1.0");
         unpack(&zip, &v1).unwrap();
         assert!(v1.join("js/bg.js").is_file());

@@ -128,10 +128,10 @@ pub fn verify<'a>(data: &'a [u8], expected_id: Option<&str>) -> Result<VerifiedC
         .filter(|v| v.len() == 16)
         .ok_or_else(|| bad("missing crx_id"))?;
     let id = id_from_hash(crx_id);
-    if let Some(expected) = expected_id {
-        if !expected.eq_ignore_ascii_case(&id) {
-            return Err(bad(&format!("package is for {id}, expected {expected}")));
-        }
+    if let Some(expected) = expected_id
+        && !expected.eq_ignore_ascii_case(&id)
+    {
+        return Err(bad(&format!("package is for {id}, expected {expected}")));
     }
 
     let mut message = Vec::with_capacity(SIGNATURE_CONTEXT.len() + 4 + signed.len());
@@ -237,7 +237,10 @@ mod tests {
 
     #[test]
     fn id_alphabet() {
-        assert_eq!(id_from_hash(&[0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, 0, 0, 0, 0xff]), "abcdefghijklmnopaaaaaaaaaaaaaapp");
+        assert_eq!(
+            id_from_hash(&[0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0, 0, 0, 0, 0, 0, 0, 0xff]),
+            "abcdefghijklmnopaaaaaaaaaaaaaapp"
+        );
     }
 
     #[test]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tabs-activate"
+description = "Enables the tabs_activate command without any pre-configured scope."
+commands.allow = ["tabs_activate"]
+
+[[permission]]
+identifier = "deny-tabs-activate"
+description = "Denies the tabs_activate command without any pre-configured scope."
+commands.deny = ["tabs_activate"]

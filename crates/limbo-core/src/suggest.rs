@@ -283,19 +283,13 @@ mod tests {
 
     #[test]
     fn suggest_url() {
-        assert_eq!(
-            google_suggest_url("a b"),
-            "https://suggestqueries.google.com/complete/search?client=firefox&q=a+b"
-        );
+        assert_eq!(google_suggest_url("a b"), "https://suggestqueries.google.com/complete/search?client=firefox&q=a+b");
     }
 
     #[test]
     fn autocomplete_hosts() {
         let hosts = vec!["https://www.google.com".to_string(), "https://github.com".to_string()];
-        assert_eq!(
-            inline_autocomplete("goo", &hosts),
-            Some(("https://www.google.com/".into(), "gle.com/".into()))
-        );
+        assert_eq!(inline_autocomplete("goo", &hosts), Some(("https://www.google.com/".into(), "gle.com/".into())));
         assert_eq!(inline_autocomplete("www.goo", &hosts).map(|x| x.1), Some("gle.com/".into()));
         assert_eq!(inline_autocomplete("git", &hosts).map(|x| x.0), Some("https://github.com/".into()));
         assert_eq!(inline_autocomplete("github.com/", &hosts), None, "nothing left to complete");

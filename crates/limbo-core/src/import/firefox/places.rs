@@ -20,9 +20,8 @@ pub fn read_history(
     let total: i64 = conn.query_row("SELECT COUNT(*) FROM moz_places", [], |r| r.get(0))?;
     let mut last_id = 0i64;
     let mut done = 0usize;
-    let mut places_stmt = conn.prepare(
-        "SELECT id, url, title, COALESCE(typed, 0) FROM moz_places WHERE id > ?1 ORDER BY id LIMIT ?2",
-    )?;
+    let mut places_stmt =
+        conn.prepare("SELECT id, url, title, COALESCE(typed, 0) FROM moz_places WHERE id > ?1 ORDER BY id LIMIT ?2")?;
     let mut visits_stmt = conn.prepare(
         "SELECT place_id, visit_date, visit_type FROM moz_historyvisits
          WHERE place_id BETWEEN ?1 AND ?2 AND visit_date IS NOT NULL",
@@ -135,10 +134,10 @@ pub fn read_bookmarks(conn: &Connection) -> Result<Vec<ImportedBookmark>> {
                 added_us: r.added,
                 modified_us: r.modified.max(r.added),
             });
-            if kind == BookmarkKind::Folder {
-                if let Some(kids) = children.get(&r.id) {
-                    stack.extend(kids.iter().rev());
-                }
+            if kind == BookmarkKind::Folder
+                && let Some(kids) = children.get(&r.id)
+            {
+                stack.extend(kids.iter().rev());
             }
         }
     }

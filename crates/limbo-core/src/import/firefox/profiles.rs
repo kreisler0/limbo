@@ -88,10 +88,10 @@ pub fn discover(root: &Path) -> Result<Vec<FirefoxProfile>> {
         };
         profiles.push(describe(name, path, is_default));
     }
-    if !profiles.iter().any(|p| p.is_default) {
-        if let Some(p) = profiles.iter_mut().find(|p| p.has_history) {
-            p.is_default = true;
-        }
+    if !profiles.iter().any(|p| p.is_default)
+        && let Some(p) = profiles.iter_mut().find(|p| p.has_history)
+    {
+        p.is_default = true;
     }
     profiles.sort_by_key(|p| !p.is_default);
     Ok(profiles)
@@ -136,7 +136,9 @@ mod tests {
 
     #[test]
     fn ini_parsing() {
-        let ini = parse_ini("\u{feff}[General]\nStartWithLastProfile=1\n; comment\n[Profile0]\nName = default\nPath=Profiles/abc.default\n");
+        let ini = parse_ini(
+            "\u{feff}[General]\nStartWithLastProfile=1\n; comment\n[Profile0]\nName = default\nPath=Profiles/abc.default\n",
+        );
         assert_eq!(ini.len(), 2);
         assert_eq!(ini[1].0, "Profile0");
         assert_eq!(get(&ini[1].1, "name"), Some("default"));
@@ -157,7 +159,11 @@ mod tests {
              [General]\nStartWithLastProfile=1\nVersion=2\n",
         )
         .unwrap();
-        std::fs::write(root.join("installs.ini"), "[308046B0AF4A39CB]\nDefault=Profiles/bbb.default-release\nLocked=1\n").unwrap();
+        std::fs::write(
+            root.join("installs.ini"),
+            "[308046B0AF4A39CB]\nDefault=Profiles/bbb.default-release\nLocked=1\n",
+        )
+        .unwrap();
         let profiles = discover(root).unwrap();
         assert_eq!(profiles.len(), 2);
         assert_eq!(profiles[0].name, "default-release");

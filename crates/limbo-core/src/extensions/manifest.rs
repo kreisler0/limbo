@@ -100,10 +100,9 @@ pub fn strip_json_comments(src: &str) -> String {
 fn icons_of(v: Option<&Value>) -> Vec<(u32, String)> {
     let mut out: Vec<(u32, String)> = match v {
         Some(Value::String(s)) => vec![(0, s.clone())],
-        Some(Value::Object(m)) => m
-            .iter()
-            .filter_map(|(k, v)| Some((k.parse().ok()?, v.as_str()?.to_string())))
-            .collect(),
+        Some(Value::Object(m)) => {
+            m.iter().filter_map(|(k, v)| Some((k.parse().ok()?, v.as_str()?.to_string()))).collect()
+        }
         _ => Vec::new(),
     };
     out.sort();
@@ -168,8 +167,15 @@ pub fn parse(json: &str, messages: Option<&Value>) -> Result<ManifestInfo> {
         description: localize(s("description").unwrap_or(""), messages),
         background,
         has_action: action.is_some(),
-        popup: action.and_then(|a| a.get("default_popup")).and_then(Value::as_str).filter(|p| !p.is_empty()).map(str::to_string),
-        action_title: action.and_then(|a| a.get("default_title")).and_then(Value::as_str).map(|t| localize(t, messages)),
+        popup: action
+            .and_then(|a| a.get("default_popup"))
+            .and_then(Value::as_str)
+            .filter(|p| !p.is_empty())
+            .map(str::to_string),
+        action_title: action
+            .and_then(|a| a.get("default_title"))
+            .and_then(Value::as_str)
+            .map(|t| localize(t, messages)),
         icons: icons_of(v.get("icons")),
         action_icons: icons_of(action.and_then(|a| a.get("default_icon"))),
         options_page,

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-bookmarks-export-html"
+description = "Enables the bookmarks_export_html command without any pre-configured scope."
+commands.allow = ["bookmarks_export_html"]
+
+[[permission]]
+identifier = "deny-bookmarks-export-html"
+description = "Denies the bookmarks_export_html command without any pre-configured scope."
+commands.deny = ["bookmarks_export_html"]

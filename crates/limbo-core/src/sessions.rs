@@ -110,7 +110,12 @@ mod tests {
     #[test]
     fn normalize_keeps_active_tab() {
         let s = Session {
-            tabs: vec![tab("https://a.com/", false), tab("", false), tab("https://b.com/", false), tab("https://p.com/", true)],
+            tabs: vec![
+                tab("https://a.com/", false),
+                tab("", false),
+                tab("https://b.com/", false),
+                tab("https://p.com/", true),
+            ],
             active: 2,
             window: None,
         }

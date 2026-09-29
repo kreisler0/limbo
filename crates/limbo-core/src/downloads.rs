@@ -53,13 +53,27 @@ pub struct DownloadRecord {
     pub ended_us: Option<i64>,
 }
 
-pub fn insert(conn: &Connection, url: &str, path: &str, mime: Option<&str>, total: Option<i64>, now_us: i64) -> Result<i64> {
+/// Records a new download. `id` lets the host use its own ids (`None` = auto).
+pub fn insert(
+    conn: &Connection,
+    id: Option<i64>,
+    url: &str,
+    path: &str,
+    mime: Option<&str>,
+    total: Option<i64>,
+    now_us: i64,
+) -> Result<i64> {
     conn.execute(
-        "INSERT INTO downloads(url, path, mime, total_bytes, received_bytes, state, started_us)
-         VALUES (?1, ?2, ?3, ?4, 0, 'inProgress', ?5)",
-        params![url, path, mime, total, now_us],
+        "INSERT OR REPLACE INTO downloads(id, url, path, mime, total_bytes, received_bytes, state, started_us)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, 'inProgress', ?6)",
+        params![id, url, path, mime, total, now_us],
     )?;
     Ok(conn.last_insert_rowid())
+}
+
+/// Highest id in use (the host continues from here).
+pub fn max_id(conn: &Connection) -> Result<i64> {
+    Ok(conn.query_row("SELECT COALESCE(MAX(id), 0) FROM downloads", [], |r| r.get(0))?)
 }
 
 pub fn update(
@@ -134,7 +148,9 @@ mod tests {
     fn lifecycle() {
         let db = Db::open_in_memory().unwrap();
         let c = db.conn();
-        let id = insert(c, "https://x.com/a.zip", "C:\\Users\\me\\Downloads\\a.zip", Some("application/zip"), None, 1).unwrap();
+        let id =
+            insert(c, None, "https://x.com/a.zip", "C:\\Users\\me\\Downloads\\a.zip", Some("application/zip"), None, 1)
+                .unwrap();
         update(c, id, 50, Some(100), DownloadState::InProgress, None, 2).unwrap();
         let d = &list(c, 10).unwrap()[0];
         assert_eq!((d.received_bytes, d.total_bytes, d.state), (50, Some(100), DownloadState::InProgress));
@@ -142,7 +158,9 @@ mod tests {
         update(c, id, 100, None, DownloadState::Completed, None, 3).unwrap();
         let d = &list(c, 10).unwrap()[0];
         assert_eq!((d.state, d.ended_us, d.total_bytes), (DownloadState::Completed, Some(3), Some(100)));
-        let id2 = insert(c, "https://x.com/b.exe", "b.exe", None, None, 4).unwrap();
+        let id2 = insert(c, Some(42), "https://x.com/b.exe", "b.exe", None, None, 4).unwrap();
+        assert_eq!(id2, 42);
+        assert_eq!(max_id(c).unwrap(), 42);
         assert_eq!(mark_stale_interrupted(c).unwrap(), 1);
         assert_eq!(list(c, 10).unwrap()[0].id, id2);
         assert_eq!(clear_finished(c).unwrap(), 2);

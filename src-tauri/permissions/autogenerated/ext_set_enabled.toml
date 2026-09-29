@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-set-enabled"
+description = "Enables the ext_set_enabled command without any pre-configured scope."
+commands.allow = ["ext_set_enabled"]
+
+[[permission]]
+identifier = "deny-ext-set-enabled"
+description = "Denies the ext_set_enabled command without any pre-configured scope."
+commands.deny = ["ext_set_enabled"]

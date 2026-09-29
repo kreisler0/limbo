@@ -96,9 +96,15 @@ mod tests {
     #[test]
     fn oids() {
         // 1.2.840.113549.1.5.13 (PBES2)
-        assert_eq!(oid_to_string(&[0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x05, 0x0d]).unwrap(), "1.2.840.113549.1.5.13");
+        assert_eq!(
+            oid_to_string(&[0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x05, 0x0d]).unwrap(),
+            "1.2.840.113549.1.5.13"
+        );
         // 2.16.840.1.101.3.4.1.42 (aes256-CBC)
-        assert_eq!(oid_to_string(&[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2a]).unwrap(), "2.16.840.1.101.3.4.1.42");
+        assert_eq!(
+            oid_to_string(&[0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x01, 0x2a]).unwrap(),
+            "2.16.840.1.101.3.4.1.42"
+        );
     }
 
     #[test]

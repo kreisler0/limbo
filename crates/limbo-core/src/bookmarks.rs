@@ -114,9 +114,7 @@ fn row_to_bookmark(r: &rusqlite::Row<'_>) -> rusqlite::Result<Bookmark> {
 const COLUMNS: &str = "id, parent_id, kind, title, url, position, added_us, modified_us, guid";
 
 pub fn get(conn: &Connection, id: i64) -> Result<Option<Bookmark>> {
-    Ok(conn
-        .query_row(&format!("SELECT {COLUMNS} FROM bookmarks WHERE id = ?1"), [id], row_to_bookmark)
-        .optional()?)
+    Ok(conn.query_row(&format!("SELECT {COLUMNS} FROM bookmarks WHERE id = ?1"), [id], row_to_bookmark).optional()?)
 }
 
 pub fn children(conn: &Connection, parent_id: i64) -> Result<Vec<Bookmark>> {
@@ -515,7 +513,8 @@ pub fn import_html(conn: &mut Connection, html: &str, parent_id: i64) -> Result<
                 let close = after.to_ascii_uppercase().find("</H3>").unwrap_or(after.len());
                 let title = unescape_html(after[..close].trim());
                 let current = *stack.last().unwrap_or(&parent_id);
-                let is_toolbar = attr(tag.attrs, "PERSONAL_TOOLBAR_FOLDER").is_some_and(|v| v.eq_ignore_ascii_case("true"));
+                let is_toolbar =
+                    attr(tag.attrs, "PERSONAL_TOOLBAR_FOLDER").is_some_and(|v| v.eq_ignore_ascii_case("true"));
                 pending_folder = Some(if is_toolbar {
                     toolbar
                 } else {
@@ -533,7 +532,17 @@ pub fn import_html(conn: &mut Connection, html: &str, parent_id: i64) -> Result<
                     let added = attr(tag.attrs, "ADD_DATE").and_then(|d| d.parse::<i64>().ok());
                     let now = crate::db::now_us();
                     let added_us = added.map(|s| s * 1_000_000).unwrap_or(now);
-                    insert_full(&tx, current, BookmarkKind::Url, &title, Some(&href), None, &new_guid(), added_us, added_us)?;
+                    insert_full(
+                        &tx,
+                        current,
+                        BookmarkKind::Url,
+                        &title,
+                        Some(&href),
+                        None,
+                        &new_guid(),
+                        added_us,
+                        added_us,
+                    )?;
                     created += 1;
                 }
                 rest = &after[close..];

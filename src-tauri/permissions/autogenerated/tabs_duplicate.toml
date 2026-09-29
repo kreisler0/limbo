@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tabs-duplicate"
+description = "Enables the tabs_duplicate command without any pre-configured scope."
+commands.allow = ["tabs_duplicate"]
+
+[[permission]]
+identifier = "deny-tabs-duplicate"
+description = "Denies the tabs_duplicate command without any pre-configured scope."
+commands.deny = ["tabs_duplicate"]

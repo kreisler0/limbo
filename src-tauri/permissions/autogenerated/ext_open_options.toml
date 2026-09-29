@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ext-open-options"
+description = "Enables the ext_open_options command without any pre-configured scope."
+commands.allow = ["ext_open_options"]
+
+[[permission]]
+identifier = "deny-ext-open-options"
+description = "Denies the ext_open_options command without any pre-configured scope."
+commands.deny = ["ext_open_options"]

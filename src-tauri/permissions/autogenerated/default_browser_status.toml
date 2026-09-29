@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-default-browser-status"
+description = "Enables the default_browser_status command without any pre-configured scope."
+commands.allow = ["default_browser_status"]
+
+[[permission]]
+identifier = "deny-default-browser-status"
+description = "Denies the default_browser_status command without any pre-configured scope."
+commands.deny = ["default_browser_status"]

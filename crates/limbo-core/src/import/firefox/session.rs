@@ -91,10 +91,10 @@ pub fn parse_session(json: &[u8]) -> Result<Vec<FirefoxTab>> {
             });
         }
     }
-    if !out.iter().any(|t| t.selected) {
-        if let Some(first) = out.first_mut() {
-            first.selected = true;
-        }
+    if !out.iter().any(|t| t.selected)
+        && let Some(first) = out.first_mut()
+    {
+        first.selected = true;
     }
     Ok(out)
 }
@@ -156,7 +156,8 @@ mod tests {
         std::fs::create_dir_all(dir.path().join("sessionstore-backups")).unwrap();
         std::fs::write(dir.path().join("sessionstore.jsonlz4"), encode_mozlz4(b"{\"windows\":[]}")).unwrap();
         std::thread::sleep(std::time::Duration::from_millis(20));
-        std::fs::write(dir.path().join("sessionstore-backups/recovery.jsonlz4"), encode_mozlz4(SESSION.as_bytes())).unwrap();
+        std::fs::write(dir.path().join("sessionstore-backups/recovery.jsonlz4"), encode_mozlz4(SESSION.as_bytes()))
+            .unwrap();
         assert_eq!(read(dir.path()).unwrap().len(), 3);
     }
 }

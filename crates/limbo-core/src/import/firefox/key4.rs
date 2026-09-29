@@ -187,8 +187,8 @@ pub fn unlock(conn: &Connection, primary_password: &str) -> Result<NssKeys> {
     }
 
     let mut stmt = conn.prepare("SELECT a11, a102 FROM nssPrivate")?;
-    let rows: Vec<(Option<Vec<u8>>, Option<Vec<u8>>)> =
-        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<Result<_, _>>()?;
+    type Row = (Option<Vec<u8>>, Option<Vec<u8>>);
+    let rows: Vec<Row> = stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<Result<_, _>>()?;
     let mut keys = Vec::new();
     let any_tagged = rows.iter().any(|(_, id)| id.as_deref() == Some(&LOGINS_KEY_ID[..]));
     for (a11, a102) in rows {
@@ -279,7 +279,13 @@ pub(crate) mod testutil {
     }
 
     /// PBES2 blob as NSS writes it (14-byte IV).
-    pub fn pbes2_blob(global_salt: &[u8], password: &[u8], entry_salt: &[u8], iv14: &[u8; 14], plain: &[u8]) -> Vec<u8> {
+    pub fn pbes2_blob(
+        global_salt: &[u8],
+        password: &[u8],
+        entry_salt: &[u8],
+        iv14: &[u8; 14],
+        plain: &[u8],
+    ) -> Vec<u8> {
         let iterations: u32 = 10_000;
         let hashed = Sha1::new().chain_update(global_salt).chain_update(password).finalize();
         let mut key = [0u8; 32];
@@ -287,10 +293,8 @@ pub(crate) mod testutil {
         let iv: Vec<u8> = [&[0x04, 0x0E][..], iv14].concat();
         let ct = aes_encrypt(&key, &iv, plain);
         let prf = tlv(0x30, &[oid(super::OID_HMAC_SHA256), vec![0x05, 0x00]].concat());
-        let kdf_params = tlv(
-            0x30,
-            &[tlv(0x04, entry_salt), tlv(0x02, &[0x27, 0x10]), tlv(0x02, &[0x20]), prf].concat(),
-        );
+        let kdf_params =
+            tlv(0x30, &[tlv(0x04, entry_salt), tlv(0x02, &[0x27, 0x10]), tlv(0x02, &[0x20]), prf].concat());
         let kdf = tlv(0x30, &[oid(super::OID_PBKDF2), kdf_params].concat());
         let enc = tlv(0x30, &[oid(super::OID_AES256_CBC), tlv(0x04, iv14)].concat());
         let alg = tlv(0x30, &[oid(super::OID_PBES2), tlv(0x30, &[kdf, enc].concat())].concat());

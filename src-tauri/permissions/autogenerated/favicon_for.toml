@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-favicon-for"
+description = "Enables the favicon_for command without any pre-configured scope."
+commands.allow = ["favicon_for"]
+
+[[permission]]
+identifier = "deny-favicon-for"
+description = "Denies the favicon_for command without any pre-configured scope."
+commands.deny = ["favicon_for"]

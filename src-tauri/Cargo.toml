@@ -19,11 +19,14 @@ limbo-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-log.workspace = true
+log = { workspace = true, features = ["std"] }
 url.workspace = true
 uuid.workspace = true
 parking_lot.workspace = true
 percent-encoding.workspace = true
+base64 = "0.22"
+sha2 = "0.10"
+zeroize = "1.8"
 
 # Multi-webview (Window::add_child) requires `unstable`.
 tauri = { version = "2.12", default-features = false, features = ["wry", "compression", "common-controls-v6", "unstable"] }
@@ -31,17 +34,20 @@ tauri-plugin-single-instance = "2.5"
 
 # Small blocking HTTP client using the Windows certificate store (schannel).
 ureq = { version = "3.1", default-features = false, features = ["native-tls", "gzip"] }
+tokio = { version = "1", features = ["sync", "time"] }
 zip = { version = "8.6", default-features = false, features = ["deflate"] }
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.39"
 windows-core = "0.62"
+windows-future = "0.3"
 windows = { version = "0.62", features = [
   "Win32_Foundation",
   "Win32_Graphics_Dwm",
   "Win32_Graphics_Gdi",
   "Win32_Security",
   "Win32_Security_Cryptography",
+  "Win32_Security_Credentials",
   "Win32_System_Com",
   "Win32_System_Memory",
   "Win32_System_ProcessStatus",
@@ -52,7 +58,11 @@ windows = { version = "0.62", features = [
   "Win32_UI_HiDpi",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_UI_Shell",
+  "Win32_UI_Shell_Common",
   "Win32_UI_WindowsAndMessaging",
+  "Wdk",
+  "Wdk_System",
+  "Wdk_System_SystemInformation",
   "Foundation",
   "Security_Credentials_UI",
 ] }

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-tabs-move"
+description = "Enables the tabs_move command without any pre-configured scope."
+commands.allow = ["tabs_move"]
+
+[[permission]]
+identifier = "deny-tabs-move"
+description = "Denies the tabs_move command without any pre-configured scope."
+commands.deny = ["tabs_move"]
