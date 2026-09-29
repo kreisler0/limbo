@@ -1,0 +1,45 @@
+[package]
+name = "limbo-core"
+description = "Platform-independent core of the Limbo browser: omnibox, storage, memory policy, Firefox import, extension packaging."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+log.workspace = true
+url.workspace = true
+percent-encoding.workspace = true
+uuid.workspace = true
+
+rusqlite = { version = "0.40", features = ["bundled"] }
+psl = "2.1"
+
+# Firefox password decryption (NSS key4.db / logins.json)
+aes = "0.8"
+cbc = { version = "0.1", features = ["std"] }
+des = "0.8"
+pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+hmac = "0.12"
+sha1 = "0.10"
+sha2 = "0.10"
+base64 = "0.22"
+zeroize = { version = "1.8", features = ["derive"] }
+
+# CRX3 signature verification (public-key verify only).
+rsa = { version = "0.9", default-features = false, features = ["std", "sha2"] }
+
+# Archives: CRX/XPI (zip) and Firefox session files (mozLz4)
+zip = { version = "8.6", default-features = false, features = ["deflate"] }
+lz4_flex = { version = "0.14", default-features = false, features = ["std", "safe-decode"] }
+
+[dev-dependencies]
+tempfile = "3.23"
+
+[features]
+# Exposes vault::TestProtector (a reversible fake) for integration tests.
+test-protector = []

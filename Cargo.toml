@@ -1,0 +1,36 @@
+[workspace]
+resolver = "3"
+members = ["crates/limbo-core", "src-tauri"]
+# The host crate only builds for Windows (WebView2). Plain `cargo test` on any
+# OS exercises the platform-independent core.
+default-members = ["crates/limbo-core"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+authors = ["Yida"]
+publish = false
+
+[workspace.dependencies]
+limbo-core = { path = "crates/limbo-core" }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+thiserror = "2.0.17"
+log = "0.4.28"
+url = "2.5.7"
+percent-encoding = "2.3.2"
+uuid = { version = "1.18.1", features = ["v4", "serde"] }
+parking_lot = "0.12.5"
+
+[profile.release]
+# Small, fast binary: the host process should stay well under its 25 MB budget.
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.dev.package."*"]
+# Keep dependencies (SQLite, crypto) reasonably fast in debug builds.
+opt-level = 2
