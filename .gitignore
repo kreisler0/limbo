@@ -11,3 +11,4 @@ Thumbs.db
 /tools/icon/.venv
 __pycache__/
 /src-tauri/gen/schemas
+/tools/icon/preview.png
