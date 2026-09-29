@@ -17,11 +17,12 @@ and a full import from Firefox. Built for a 4 GB laptop.
 - **Passwords:** Limbo's own vault (Windows DPAPI), autofill, save prompts,
   Windows Hello before revealing.
 
-Status: all features are implemented and tested on Linux (core logic and UI
-against a mock host). The Windows app type-checks and lints clean but has not
-yet run on Windows: the Phase 0 spikes in [docs/DECISIONS.md](docs/DECISIONS.md)
-and the memory budgets in [docs/MEMORY_REPORT.md](docs/MEMORY_REPORT.md) need
-the owner's laptop.
+Status: all features are implemented. The core logic and the UI (against a
+mock host) are tested on Linux; the Windows app builds, lints clean and
+packages into a 2.7 MB installer in CI, but hasn't been run interactively on
+Windows yet: the Phase 0 spikes in [docs/DECISIONS.md](docs/DECISIONS.md) and
+the memory budgets in [docs/MEMORY_REPORT.md](docs/MEMORY_REPORT.md) need the
+owner's laptop.
 
 ## Get the installer
 

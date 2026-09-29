@@ -35,7 +35,7 @@ Report the **median** of 15 samples taken after the scenario has settled.
 | Readout overhead | < 1 MB, < 0.5% CPU | – | not measured |
 | Idle CPU after 10 s without input | ~0% | – | not measured |
 | Cold start to interactive omnibox | ≤ 800 ms | – | not measured |
-| Installer | ≤ 10 MB | – | not measured |
+| Installer | ≤ 10 MB | 2.74 MB (CI, NSIS) | ✅ pass |
 
 ## Procedure
 
@@ -73,12 +73,13 @@ the charger (power plans change timer behaviour). Use Settings → Memory saver
 
 ## Measured elsewhere
 
-Numbers that don't need Windows, from the development container (Linux, not
-the target laptop):
+Numbers that don't need the laptop, from the development container (Linux)
+and CI (GitHub's `windows-latest`):
 
 | What | Result | Budget |
 |---|---|---|
 | UI bundle, gzip | 48 KB JS, 9 KB CSS | ≤ 150 KB JS, ≤ 40 KB CSS |
+| Installer (`Limbo_0.1.0_x64-setup.exe`, CI on `windows-latest`) | 2.74 MB | ≤ 10 MB |
 | Local omnibox suggestions, 100k history rows (`history::tests::suggestions_are_fast_with_100k_rows`, release build) | ≤ 17 ms max | ≤ 30 ms (re-measure on the laptop) |
 
 ## Findings
