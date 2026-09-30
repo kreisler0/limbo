@@ -86,10 +86,10 @@ fn ui_navigation_allowed(url: &url::Url) -> bool {
 }
 
 fn main() {
-    let paths = Paths::new().expect("create %LOCALAPPDATA%\\Limbo");
+    let paths = Paths::new().expect("create Limbo's data folder");
     logging::init(paths.logs.clone());
     std::panic::set_hook(Box::new(|info| log::error!("panic: {info}")));
-    log::info!("Limbo {} starting", env!("CARGO_PKG_VERSION"));
+    log::info!("Limbo {} starting{}", env!("CARGO_PKG_VERSION"), if paths.portable { " (portable)" } else { "" });
 
     let db = open_db(&paths);
     let settings = db.load_settings().unwrap_or_default();
@@ -254,6 +254,10 @@ fn main() {
             tabs::lifecycle::start(&b);
             memory::start(&b);
             extensions::start_updater(&b);
+            if let Some(old_root) = b.paths.moved_from.clone() {
+                let b4 = b.clone();
+                tauri::async_runtime::spawn(async move { extensions::relocate(&b4, old_root).await });
+            }
 
             let b3 = b.clone();
             let session = session.clone();

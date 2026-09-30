@@ -303,7 +303,7 @@ export function createMockBackend(): Backend {
       tabs: tabs.map(info),
       activeId,
       settings,
-      platform: { windows11: true, mica: false, version: '0.1.0-mock', engineVersion: '140.0.0.0' },
+      platform: { windows11: true, mica: false, version: '0.1.0-mock', engineVersion: '140.0.0.0', portable: new URLSearchParams(location.search).get('portable') === '1' },
       window: { maximized: false, fullscreen: false, focused: true, minimized: false },
       firstRun: !settings.onboardingDone,
       isDefaultBrowser: false,

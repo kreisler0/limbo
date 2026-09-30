@@ -31,6 +31,22 @@ Every push builds a Windows installer in CI: open the latest run under
 (`Limbo_0.1.0_x64-setup.exe`). It installs for the current user, no admin
 needed.
 
+## Portable (PortableApps.com Format)
+
+CI also builds **Limbo Portable** for the PortableApps.com Platform:
+
+- `limbo-portable-paf` artifact: `LimboPortable_0.1.0.paf.exe`, the standard
+  PortableApps.com installer (Platform → Apps → Install a new app).
+- `limbo-portable-folder` artifact: the same package as a folder
+  (`LimboPortable\`), for copying into the Platform's `PortableApps` folder
+  (then Apps → Refresh app icons).
+
+Limbo Portable keeps everything in its `Data` folder and writes nothing to the
+registry or `%LOCALAPPDATA%`. It uses the WebView2 runtime built into Windows
+11 and can't be the default browser. The launcher is
+`packaging/portableapps/launcher`; the package's metadata, icons and help page
+are in `packaging/portableapps/LimboPortable`.
+
 ## Layout
 
 | Path | What |
@@ -38,6 +54,7 @@ needed.
 | `crates/limbo-core` | Everything that doesn't need Windows: omnibox, suggestions, frecency, tab lifecycle, SQLite storage, password vault format, Firefox import and decryption, CRX verification. Builds and tests on any OS. |
 | `src-tauri` | The Windows host: window, tabs, WebView2 integration, memory readout, passwords, extensions, downloads, IPC. |
 | `ui` | The browser chrome: Svelte 5 + TypeScript, plain CSS, no UI framework. Runs in a normal browser against a mock host. |
+| `packaging/portableapps` | The PortableApps.com Format package: `LimboPortable.exe` launcher (Rust) and the package files. |
 | `tools` | `measure-memory.ps1`, the icon generator, Firefox test data, a Windows type-check from Linux. |
 | `docs` | [Decisions](docs/DECISIONS.md), [memory report](docs/MEMORY_REPORT.md), [manual test script](docs/MANUAL_TEST.md). |
 

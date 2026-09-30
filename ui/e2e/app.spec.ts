@@ -171,3 +171,16 @@ test('switching tabs closes page-bound popovers', async ({ page }) => {
   await press(page, 'Control+2');
   await expect(page.getByRole('dialog', { name: 'Site information' })).toHaveCount(0);
 });
+
+test('portable: no default-browser step or command', async ({ page }) => {
+  await page.goto('/?onboarding=1&portable=1');
+  await page.getByRole('button', { name: 'Get started' }).click();
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await expect(page.getByText('Block ads and trackers')).toBeVisible();
+  await page.getByRole('button', { name: /Continue|Not now/ }).click();
+  // The last step was the extension one: onboarding is done.
+  await expect.poll(() => page.evaluate(() => window.__limboMock.settings().onboardingDone)).toBe(true);
+  await press(page, 'Control+k');
+  await page.getByRole('dialog', { name: 'Command palette' }).getByRole('textbox').fill('default');
+  await expect(page.getByRole('option', { name: /default browser/ })).toHaveCount(0);
+});

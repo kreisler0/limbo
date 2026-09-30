@@ -146,6 +146,38 @@ user gesture. `[VERIFY]`
 **Navigation filter.** Tab webviews can't navigate to the UI's origin, and
 `file://` only when the user typed it into the omnibox.
 
+## Portable edition (PortableApps.com Format)
+
+The owner's laptop runs apps through the PortableApps.com Platform, so Limbo
+also ships as `LimboPortable` in PortableApps.com Format:
+
+- **Own launcher.** `LimboPortable.exe` (`packaging/portableapps/launcher`, a
+  small Rust program) starts `App\Limbo\Limbo.exe` with `LIMBO_DATA_DIR` set to
+  the package's `Data\` folder and exits at once, so no launcher process stays
+  in memory. The PortableApps.com Launcher generator would add a resident NSIS
+  process and an INI-driven layer Limbo doesn't need, because Limbo supports a
+  data folder natively.
+- **Portable mode** (`LIMBO_DATA_DIR`, or a `Data` folder next to `Limbo.exe`):
+  profile, database, extensions, snapshots and logs all live in that folder;
+  no registry writes, so "make default browser" is hidden and refused.
+- **Moving the package** (USB drive letters): WebView2 remembers extensions by
+  absolute folder. Limbo records the last data folder (`Data\last-root.txt`);
+  when it changes, each extension is registered again from the new place
+  (same ID, so its settings should be kept `[VERIFY]`; if the engine refuses,
+  it's removed and re-added and its settings reset).
+- **Not bundled:** the WebView2 runtime (the fixed-version runtime is
+  ~150 MB; Windows 11 has the evergreen one built in).
+- **Passwords** stay DPAPI-encrypted for the current Windows user, so they
+  open only for that user; the help page says to export before moving.
+- **Single instance:** an installed Limbo and Limbo Portable share the
+  single-instance identifier, so if both run, the second opens in the first.
+- The `.paf.exe` is built in CI by the official PortableApps.com Installer
+  (downloaded from portableapps.com at build time and unpacked with 7-Zip);
+  if that step fails, the package folder artifact is still complete.
+  `[VERIFY]` `appinfo.ini` against the current PortableApps.com Format version
+  (written for 3.7) and the license flags once Limbo has a license
+  (currently `Shareable=false`, `OpenSource=false`).
+
 ## Security choices
 
 - **SmartScreen off** (owner's choice, saves an extra process and network

@@ -13,8 +13,10 @@
   let { onclose }: { onclose: () => void } = $props();
 
   const UBOL = 'ddkjiahejlhfcafbddmgiahcphecmpfh';
-  const STEPS = ['welcome', 'import', 'extension', 'default'] as const;
-  let step = $state<(typeof STEPS)[number]>('welcome');
+  const ALL_STEPS = ['welcome', 'import', 'extension', 'default'] as const;
+  // A portable Limbo can't become the default browser, so that step is skipped.
+  const STEPS = $derived(ALL_STEPS.filter((s) => s !== 'default' || !browser.platform?.portable));
+  let step = $state<(typeof ALL_STEPS)[number]>('welcome');
   let review = $state<Review | null>(null);
   let preparing = $state(false);
 

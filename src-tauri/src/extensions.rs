@@ -408,8 +408,9 @@ async fn with_extension<T: Send + 'static>(
     .await
 }
 
-pub async fn remove(b: &SharedBrowser, id: String) -> Result<(), String> {
-    let _ = with_extension(b, id.clone(), |e, tx: oneshot::Sender<()>| unsafe {
+/// Unregisters an extension from the WebView2 profile (its folder stays).
+async fn remove_from_profile(b: &SharedBrowser, id: String) {
+    let _ = with_extension(b, id, |e, tx: oneshot::Sender<()>| unsafe {
         let tx = std::cell::RefCell::new(Some(tx));
         let _ = e.Remove(&BrowserExtensionRemoveCompletedHandler::create(Box::new(move |_| {
             if let Some(tx) = tx.borrow_mut().take() {
@@ -419,6 +420,10 @@ pub async fn remove(b: &SharedBrowser, id: String) -> Result<(), String> {
         })));
     })
     .await;
+}
+
+pub async fn remove(b: &SharedBrowser, id: String) -> Result<(), String> {
+    remove_from_profile(b, id.clone()).await;
     let i = id.clone();
     let record = b.db.run(move |db| registry::get(db.conn(), &i)).await?;
     if let Some(r) = record {
@@ -434,6 +439,53 @@ pub async fn remove(b: &SharedBrowser, id: String) -> Result<(), String> {
     }
     b.emit("ext:changed", ());
     Ok(())
+}
+
+/// The portable package moved (another drive letter or folder). The engine
+/// remembers each extension by its absolute folder, so register the folders at
+/// their new place. Adding the same ID from the new folder updates it in place
+/// and keeps its settings `[VERIFY]`; if the engine refuses, the extension is
+/// removed and added again (its settings reset).
+pub async fn relocate(b: &SharedBrowser, old_root: PathBuf) {
+    let records = match b.db.run(|db| registry::list(db.conn())).await {
+        Ok(r) => r,
+        Err(e) => {
+            log::warn!("relocate extensions: {e}");
+            return;
+        }
+    };
+    let enabled: HashMap<String, bool> = profile_extensions(b).await.into_iter().map(|(id, _, on)| (id, on)).collect();
+    let mut moved = 0;
+    for mut record in records {
+        // Unpacked developer folders outside the package stay where they are.
+        let Some(new_dir) = b.paths.rebase(Path::new(&record.path), &old_root) else { continue };
+        if !new_dir.is_dir() {
+            continue;
+        }
+        let added = match add_to_profile(b, new_dir.clone()).await {
+            Ok(id) => Ok(id),
+            Err(_) => {
+                remove_from_profile(b, record.id.clone()).await;
+                add_to_profile(b, new_dir.clone()).await
+            }
+        };
+        match added {
+            Ok(_) => {
+                record.path = new_dir.to_string_lossy().into_owned();
+                let id = record.id.clone();
+                if let Err(e) = b.db.run(move |db| registry::upsert(db.conn(), &record)).await {
+                    log::warn!("relocate {id}: {e}");
+                }
+                if enabled.get(&id) == Some(&false) {
+                    let _ = set_enabled(b, id, false).await;
+                }
+                moved += 1;
+            }
+            Err(e) => log::warn!("relocate {}: {e}", record.id),
+        }
+    }
+    log::info!("portable package moved; re-registered {moved} extensions");
+    b.emit("ext:changed", ());
 }
 
 pub async fn set_enabled(b: &SharedBrowser, id: String, on: bool) -> Result<(), String> {

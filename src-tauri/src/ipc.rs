@@ -31,6 +31,8 @@ pub struct Platform {
     pub mica: bool,
     pub version: &'static str,
     pub engine_version: Option<String>,
+    /// Running from a portable package: no default-browser registration.
+    pub portable: bool,
 }
 
 #[derive(Serialize)]
@@ -58,6 +60,7 @@ pub async fn app_state(b: B<'_>) -> R<AppState> {
             mica: win11 && settings.mica,
             version: env!("CARGO_PKG_VERSION"),
             engine_version: crate::extensions::BROWSER_VERSION.get().cloned(),
+            portable: b.paths.portable,
         },
         settings,
         window: crate::window::state(&b),
@@ -760,7 +763,13 @@ pub async fn devtools_open(b: B<'_>, id: TabId) -> R<()> {
 }
 
 #[tauri::command]
-pub async fn default_browser_open() -> R<()> {
+pub async fn default_browser_open(b: B<'_>) -> R<()> {
+    // Registering writes to the registry; a portable app must not.
+    if b.paths.portable {
+        return Err(
+            "Portable Limbo can't be the default browser. Install Limbo to use it for links from other apps.".into()
+        );
+    }
     crate::default_browser::open_settings();
     Ok(())
 }

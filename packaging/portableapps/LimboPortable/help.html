@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Limbo Portable Help</title>
+<style>
+  :root { color-scheme: light dark; --bg: #ffffff; --text: #37352f; --muted: rgba(55,53,47,.72); --line: rgba(55,53,47,.12); }
+  @media (prefers-color-scheme: dark) { :root { --bg: #191919; --text: rgba(255,255,255,.9); --muted: rgba(255,255,255,.6); --line: rgba(255,255,255,.1); } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 20px 64px; }
+  header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  header img { border-radius: 14px; }
+  h1 { margin: 0; font-size: 26px; font-weight: 600; }
+  h2 { margin: 32px 0 8px; font-size: 17px; font-weight: 600; }
+  p, li { color: var(--text); }
+  .muted { color: var(--muted); margin: 2px 0 0; }
+  code { font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+  ul { padding-left: 20px; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="App/AppInfo/appicon_75.png" width="64" height="64" alt="">
+    <div>
+      <h1>Limbo Portable</h1>
+      <p class="muted">A lightweight browser, packaged in PortableApps.com Format.</p>
+    </div>
+  </header>
+
+  <p>Start Limbo with <code>LimboPortable.exe</code> or from the PortableApps.com Platform menu.
+  Everything Limbo keeps (tabs, history, bookmarks, passwords, extensions, settings) stays in this
+  package's <code>Data</code> folder. Limbo Portable writes nothing to the registry and nothing to your
+  user profile.</p>
+
+  <h2>Requirements</h2>
+  <ul>
+    <li>Windows 10 or 11, 64-bit.</li>
+    <li>The Microsoft Edge WebView2 Runtime, which is built into Windows 11 (and installed on most
+    Windows 10 PCs by Windows Update). Limbo uses it as its engine; it isn't included in the package.</li>
+  </ul>
+
+  <h2>Good to know</h2>
+  <ul>
+    <li><strong>Passwords</strong> are encrypted with your Windows account, so saved passwords only
+    open when you're signed in to Windows as the same user (usually on the same PC). Export them first
+    (Settings → Passwords → Export) before moving to another PC or account.</li>
+    <li><strong>Default browser:</strong> a portable app can't register itself, so links from other
+    apps keep opening in your usual browser.</li>
+    <li><strong>Moving the package</strong> (another drive letter, another folder) is fine. Limbo
+    re-registers its extensions from the new place on the next start; in rare cases an extension's
+    own settings reset.</li>
+    <li>Run one copy of Limbo at a time. An installed Limbo and Limbo Portable open in the same
+    window if both are running.</li>
+    <li>Downloads go to your Downloads folder unless you choose another in Settings → Downloads.</li>
+  </ul>
+
+  <h2>Updating</h2>
+  <p>Install a newer <code>LimboPortable_x.y.z.paf.exe</code> over this one. Your <code>Data</code>
+  folder is kept.</p>
+
+  <hr>
+  <p class="muted">Limbo is built from <a href="https://github.com/kreisler0/limbo">github.com/kreisler0/limbo</a>.
+  PortableApps.com is a trademark of Rare Ideas, LLC. Limbo Portable is not affiliated with PortableApps.com.</p>
+</main>
+</body>
+</html>

@@ -75,7 +75,7 @@ export interface AppState {
   tabs: TabInfo[];
   activeId: TabId | null;
   settings: Settings;
-  platform: { windows11: boolean; mica: boolean; version: string; engineVersion: string | null };
+  platform: { windows11: boolean; mica: boolean; version: string; engineVersion: string | null; portable: boolean };
   window: WindowState;
   firstRun: boolean;
   isDefaultBrowser: boolean;

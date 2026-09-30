@@ -1,0 +1,3 @@
+# PortableApps.com Format expects Windows line endings in its text files.
+packaging/portableapps/LimboPortable/**/*.ini text eol=crlf
+packaging/portableapps/LimboPortable/**/*.txt text eol=crlf

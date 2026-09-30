@@ -1,9 +1,9 @@
 [workspace]
 resolver = "3"
-members = ["crates/limbo-core", "src-tauri"]
+members = ["crates/limbo-core", "src-tauri", "packaging/portableapps/launcher"]
 # The host crate only builds for Windows (WebView2). Plain `cargo test` on any
-# OS exercises the platform-independent core.
-default-members = ["crates/limbo-core"]
+# OS exercises the platform-independent core and the portable launcher.
+default-members = ["crates/limbo-core", "packaging/portableapps/launcher"]
 
 [workspace.package]
 version = "0.1.0"

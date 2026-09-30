@@ -12,3 +12,4 @@ Thumbs.db
 __pycache__/
 /src-tauri/gen/schemas
 /tools/icon/preview.png
+/dist-portable

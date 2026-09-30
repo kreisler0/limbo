@@ -240,7 +240,7 @@
     {#if s}
       <section id="general">
         <h2>General</h2>
-        {#if !browser.isDefaultBrowser}
+        {#if !browser.isDefaultBrowser && !browser.platform?.portable}
           <div class="card callout">
             <div>
               <strong>Make Limbo your default browser</strong>
@@ -474,6 +474,7 @@
           <div>
             <strong>Limbo {browser.platform?.version}</strong>
             <p>Engine: Microsoft Edge WebView2 {browser.platform?.engineVersion ?? ''}. Updates come with Windows.</p>
+            {#if browser.platform?.portable}<p>Portable edition: your data stays in the package's Data folder.</p>{/if}
           </div>
         </div>
         <h3>Advanced</h3>

@@ -140,7 +140,7 @@ export interface Command {
 }
 
 export function commands(): Command[] {
-  return [
+  const list: Command[] = [
     { id: 'new-tab', label: 'New tab', icon: 'plus', hint: LABELS.newTab, run: actions.newTab },
     { id: 'private', label: 'New private tab', icon: 'glasses', hint: LABELS.newPrivateTab, run: actions.newPrivateTab },
     { id: 'reopen', label: 'Reopen closed tab', icon: 'rotateCw', hint: LABELS.reopenClosedTab, run: actions.reopenClosed },
@@ -167,6 +167,8 @@ export function commands(): Command[] {
     { id: 'default', label: 'Make Limbo the default browser', icon: 'globe', run: () => api.defaultBrowser.open() },
     { id: 'settings', label: 'Settings', icon: 'settings', run: actions.settings },
   ];
+  // A portable Limbo can't register as the default browser (no registry writes).
+  return browser.platform?.portable ? list.filter((c) => c.id !== 'default') : list;
 }
 
 /** Handles a shortcut from the host (page focused) or the UI (keydown). */
