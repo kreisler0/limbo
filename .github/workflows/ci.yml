@@ -72,12 +72,14 @@ jobs:
         working-directory: ui
       - run: cargo clippy -p limbo -p limbo-portable-launcher --all-targets -- -D warnings
       - run: cargo test -p limbo -p limbo-portable-launcher
-      - name: Check measure-memory.ps1 parses
+      - name: Check PowerShell scripts parse
         shell: pwsh
         run: |
-          $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile("$PWD\tools\measure-memory.ps1", [ref]$null, [ref]$errors) | Out-Null
-          if ($errors) { $errors; exit 1 }
+          foreach ($f in 'tools\measure-memory.ps1', 'packaging\portableapps\build-paf.ps1') {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile("$PWD\$f", [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) { "${f}:"; $errors; exit 1 }
+          }
       - name: Build installer
         run: npm run tauri -- build
         working-directory: ui
@@ -136,40 +138,9 @@ jobs:
         continue-on-error: true
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
-          $page = (Invoke-WebRequest https://portableapps.com/apps/development/portableapps.com_installer -UseBasicParsing).Content
-          $file = [regex]::Match($page, 'PortableApps\.comInstaller_[0-9][0-9.]*(_[A-Za-z]+)?\.paf\.exe').Value
-          if (-not $file) { throw "PortableApps.com Installer download not found on its page" }
-          "PortableApps.com Installer: $file"
-          $tools = "$env:RUNNER_TEMP\pa-tools"
-          New-Item -ItemType Directory -Force $tools | Out-Null
-          $dl = "$tools\$file"
-          $urls = @(
-            "https://portableapps.com/redirect/?a=PortableApps.comInstaller&s=s&d=sfpa&f=$file",
-            "https://downloads.sourceforge.net/project/portableapps/PortableApps.com%20Installer/$file"
-          )
-          foreach ($u in $urls) {
-            try {
-              Invoke-WebRequest $u -OutFile $dl -UseBasicParsing -MaximumRedirection 10
-              $head = [System.IO.File]::ReadAllBytes($dl)[0..1]
-              if ((Get-Item $dl).Length -gt 500KB -and $head[0] -eq 0x4D -and $head[1] -eq 0x5A) { "Downloaded from $u"; break }
-            } catch { "Download failed from ${u}: $_" }
-            Remove-Item $dl -ErrorAction SilentlyContinue
-          }
-          if (-not (Test-Path $dl)) { throw "couldn't download $file" }
-          # A .paf.exe is an NSIS installer; 7-Zip unpacks it without running it.
-          & 7z x $dl "-o$tools\Installer" -y | Out-Null
-          $exe = Get-ChildItem -Recurse "$tools\Installer" -Filter PortableApps.comInstaller.exe | Select-Object -First 1
-          if (-not $exe) { throw "PortableApps.comInstaller.exe not found after unpacking" }
-          $pkg = (Resolve-Path dist-portable\LimboPortable).Path
-          $p = Start-Process $exe.FullName -ArgumentList "`"$pkg`"" -PassThru
-          if (-not $p.WaitForExit(300000)) { $p.Kill(); throw "PortableApps.com Installer timed out" }
-          $paf = Get-ChildItem dist-portable -Filter *.paf.exe | Select-Object -First 1
-          if (-not $paf) {
-            Get-ChildItem -Recurse $pkg -Filter *.txt | Where-Object Name -like '*Log*' | ForEach-Object { Get-Content $_.FullName }
-            throw "no .paf.exe was produced"
-          }
-          "Built $($paf.Name): $([math]::Round($paf.Length / 1MB, 2)) MB" | Tee-Object -Append $env:GITHUB_STEP_SUMMARY
+          $paf = packaging\portableapps\build-paf.ps1 -Package dist-portable\LimboPortable -Tools "$env:RUNNER_TEMP\pa-tools"
+          $f = Get-Item ($paf | Select-Object -Last 1)
+          "Built $($f.Name): $([math]::Round($f.Length / 1MB, 2)) MB" | Tee-Object -Append $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: limbo-portable-paf

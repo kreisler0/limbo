@@ -172,7 +172,8 @@ also ships as `LimboPortable` in PortableApps.com Format:
 - **Single instance:** an installed Limbo and Limbo Portable share the
   single-instance identifier, so if both run, the second opens in the first.
 - The `.paf.exe` is built in CI by the official PortableApps.com Installer
-  (downloaded from portableapps.com at build time and unpacked with 7-Zip);
+  (`packaging/portableapps/build-paf.ps1` downloads it from portableapps.com
+  at build time, following its download pages, and unpacks it with 7-Zip);
   if that step fails, the package folder artifact is still complete.
   `[VERIFY]` `appinfo.ini` against the current PortableApps.com Format version
   (written for 3.7) and the license flags once Limbo has a license
