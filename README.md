@@ -35,7 +35,7 @@ needed.
 
 CI also builds **Limbo Portable** for the PortableApps.com Platform:
 
-- `limbo-portable-paf` artifact: `LimboPortable_0.1.0.paf.exe`, the standard
+- `limbo-portable-paf` artifact: `LimboPortable_0.1.0_English.paf.exe` (2.8 MB), the standard
   PortableApps.com installer (Platform → Apps → Install a new app).
 - `limbo-portable-folder` artifact: the same package as a folder
   (`LimboPortable\`), for copying into the Platform's `PortableApps` folder

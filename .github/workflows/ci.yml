@@ -131,7 +131,7 @@ jobs:
         with:
           name: limbo-portable-folder
           path: dist-portable/LimboPortable
-      # The official PortableApps.com Installer turns the folder into LimboPortable_x.y.z.paf.exe.
+      # The official PortableApps.com Installer turns the folder into LimboPortable_x.y.z_English.paf.exe.
       # It's downloaded from portableapps.com at build time; if that fails, the folder above is
       # still a complete package (copy it into the Platform's PortableApps folder).
       - name: Build LimboPortable .paf.exe (PortableApps.com Installer)

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Turns the assembled LimboPortable folder into LimboPortable_x.y.z.paf.exe
+  Turns the assembled LimboPortable folder into LimboPortable_x.y.z_English.paf.exe
   with the official PortableApps.com Installer.
 
 .DESCRIPTION
